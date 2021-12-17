@@ -48,11 +48,13 @@ int isExistingWSP(char *input){
     return isExist;
 }
 
-int isInWSP(User user, int wsp_ID) {
+int isInWSP(User user, WorkSpace workspace) {
     int inWSP = 0;
     char wspID[5];
-    sprintf(wspID, "%d", wsp_ID);
+    sprintf(wspID, "%d", workspace.ID);
     int userID;
+
+    int count = 0; // number of users in wsp
 
     FILE *f;
     //r == read file text
@@ -60,17 +62,76 @@ int isInWSP(User user, int wsp_ID) {
     strcpy(filename, "db/");
     strcat(filename, "workspace_users_");
     strcat(filename, wspID);
+    strcat(filename, ".txt");
     if (!(f = fopen(filename, "r"))){
         printf("\n File not found!! \n\n");
     }
     else{
         while (!feof(f)){
             fscanf(f, "%d\n", &userID);
-            if(user.ID == userID) inWSP = 1;
+            if(user.ID == userID){
+                inWSP = 1;
+                return inWSP;
+            }
         }
     }
     fclose(f);
     return inWSP;
+}
+
+void updateWSP(WorkSpace *workspace){
+    char wspID[5];
+    sprintf(wspID, "%d", workspace->ID);
+    int userID;
+
+    FILE *f;
+    //r == read file text
+    char filename[MAX_LENGTH];
+    strcpy(filename, "db/");
+    strcat(filename, "workspace_rooms_");
+    strcat(filename, wspID);
+    strcat(filename, ".txt");
+    if (!(f = fopen(filename, "r"))){
+        printf("\n File not found!! \n\n");
+    }
+    else{
+        int count=0;
+        while (!feof(f)){
+            fscanf(f, "%d\n%s\n", &(workspace->rooms[count].ID), workspace->rooms[count].name);
+            count++;
+        }
+        workspace->num_of_rooms = count;
+    }
+    fclose(f);
+
+    // strcpy(filename, "");
+    strcpy(filename, "db/");
+    strcat(filename, "workspace_users_");
+    strcat(filename, wspID);
+    strcat(filename, ".txt");
+    if (!(f = fopen(filename, "r"))){
+        printf("\n File not found!! \n\n");
+    }
+    else{
+        int count=0;
+        while (!feof(f)){
+            fscanf(f, "%d\n", &userID);
+            count++;
+        }
+        workspace->num_of_users = count;
+    }
+}
+
+int hasRoom(WorkSpace workspace, char *room_name) {
+    int isHavingRoom = 0;
+    int i;
+    for(i=0 ; i<workspace.num_of_rooms ; i++) {
+        if(strcmp(workspace.rooms[i].name, room_name)) {
+            isHavingRoom = 1;
+            return isHavingRoom;
+        }
+    }
+    return isHavingRoom;
 }
 
 void signIn();
@@ -79,13 +140,22 @@ void signUp();
 // int main(){
 //     WorkSpace *wspList = updateListWSP();
 //     WorkSpace *p = headWSP;
+//     WorkSpace *test = headWSP->next;
 //     while(p != NULL) {
 //         printf("%d --- %s --- %d\n", p->ID, p->name, p->host->ID);
 //         p = p->next;
 //     }
 //     User x = *headUser;
 //     printf("%s\n", x.name);
-//     if(isInWSP(x, 1)) {
+//     if(isInWSP(x, *test)) {
 //         printf("%s is in WSP!\n", x.name);
+//     }
+//     updateWSP(test);
+//     printf("%d --- %s\n", test->rooms[0].ID, test->rooms[0].name);
+//     printf("%d --- %s\n", test->rooms[1].ID, test->rooms[1].name);
+//     printf("there are %d rooms and %d people in this wsp\n", test->num_of_rooms, test->num_of_users);
+    
+//     if(hasRoom(*test, "room2")) {
+//         printf("Room 2 has been created in this WSP\n");
 //     }
 // }

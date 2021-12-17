@@ -12,7 +12,6 @@
 typedef struct {
     int ID;
     char name[MAX_LENGTH];
-    User host;
     User users[MAX_USERS_IN_ROOM];
     struct WorkSpace *onWSP;
 } Room;

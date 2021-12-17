@@ -17,6 +17,8 @@ typedef struct WorkSpace{
     Room rooms[MAX_ROOM];
     User *host;
     User users[MAX_USERS_IN_WSP];
+    int num_of_users;
+    int num_of_rooms;
     struct WorkSpace *next;
 } WorkSpace;
 
