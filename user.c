@@ -49,12 +49,12 @@ int isExisting(char *input){
 void signIn();
 void signUp();
 
-int main(){
-    User *userList;
-    updateListUser(userList);
-    User *p = head;
-    while(p != NULL) {
-        printf("%s --- %s\n", p->name, p->password);
-        p = p->next;
-    }
-}
+// int main(){
+//     User *userList;
+//     updateListUser(userList);
+//     User *p = head;
+//     while(p != NULL) {
+//         printf("%s --- %s\n", p->name, p->password);
+//         p = p->next;
+//     }
+// }
