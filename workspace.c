@@ -76,16 +76,16 @@ int isInWSP(User user, int wsp_ID) {
 void signIn();
 void signUp();
 
-int main(){
-    WorkSpace *wspList = updateListWSP();
-    WorkSpace *p = headWSP;
-    while(p != NULL) {
-        printf("%d --- %s --- %d\n", p->ID, p->name, p->host->ID);
-        p = p->next;
-    }
-    User x = *headUser;
-    printf("%s\n", x.name);
-    if(isInWSP(x, 1)) {
-        printf("%s is in WSP!\n", x.name);
-    }
-}
+// int main(){
+//     WorkSpace *wspList = updateListWSP();
+//     WorkSpace *p = headWSP;
+//     while(p != NULL) {
+//         printf("%d --- %s --- %d\n", p->ID, p->name, p->host->ID);
+//         p = p->next;
+//     }
+//     User x = *headUser;
+//     printf("%s\n", x.name);
+//     if(isInWSP(x, 1)) {
+//         printf("%s is in WSP!\n", x.name);
+//     }
+// }
