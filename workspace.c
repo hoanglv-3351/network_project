@@ -51,11 +51,11 @@ int isExistingWSP(char *input){
 void signIn();
 void signUp();
 
-int main(){
-    WorkSpace *wspList = updateListWSP();
-    WorkSpace *p = headWSP;
-    while(p != NULL) {
-        printf("%d --- %s --- %d\n", p->ID, p->name, p->host->ID);
-        p = p->next;
-    }
-}
+// int main(){
+//     WorkSpace *wspList = updateListWSP();
+//     WorkSpace *p = headWSP;
+//     while(p != NULL) {
+//         printf("%d --- %s --- %d\n", p->ID, p->name, p->host->ID);
+//         p = p->next;
+//     }
+// }
