@@ -10,7 +10,7 @@
 #define MAX_LENGTH 100
 
 typedef struct {
-    char ID[MAX_LENGTH];
+    int ID;
     char name[MAX_LENGTH];
     User host;
     User users[MAX_USERS_IN_ROOM];

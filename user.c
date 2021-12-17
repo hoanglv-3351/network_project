@@ -26,7 +26,7 @@ void updateListUser(User *listUser) {
         fscanf(f, "%d\n", &number_of_users);
         printf("%d\n", number_of_users);
         while (!feof(f)){
-            fscanf(f, "%s\n%s\n%s", user.ID, user.name, user.password);
+            fscanf(f, "%d\n%s\n%s", &user.ID, user.name, user.password);
             user.isLogin = 0;
             InsertFirst(user);
         }
@@ -49,12 +49,12 @@ int isExisting(char *input){
 void signIn();
 void signUp();
 
-// int main(){
-//     User *userList;
-//     updateListUser(userList);
-//     User *p = head;
-//     while(p != NULL) {
-//         printf("%s --- %s\n", p->name, p->password);
-//         p = p->next;
-//     }
-// }
+int main(){
+    User *userList;
+    updateListUser(userList);
+    User *p = head;
+    while(p != NULL) {
+        printf("%s --- %s\n", p->name, p->password);
+        p = p->next;
+    }
+}

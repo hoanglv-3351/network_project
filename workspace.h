@@ -10,7 +10,7 @@
 #include "user.h"
 
 typedef struct {
-    char ID[MAX_LENGTH];
+    int ID;
     char name[MAX_LENGTH];
     Room rooms[MAX_ROOM];
     User host;

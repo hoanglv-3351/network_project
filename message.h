@@ -7,7 +7,7 @@
 #define MAX_LENGTH 100
 
 typedef struct {
-    char ID[MAX_LENGTH];
+    int ID;
     char content[MAX_LENGTH];
     User sendUser;
     User receiveUser;

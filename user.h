@@ -8,7 +8,7 @@
 int number_of_users = 0;
 
 typedef struct {
-    char ID[MAX_LENGTH];
+    int ID;
     char name[MAX_LENGTH];
     char password[MAX_LENGTH];
     int isLogin;
