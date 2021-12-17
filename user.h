@@ -18,7 +18,7 @@ typedef struct User{
 User *headUser = NULL;
 User *cur = NULL;
 
-User *updateListUser();
-User *findUserByID(int ID);
+void updateListUser();
+User findUserByID(int ID);
 
 #endif

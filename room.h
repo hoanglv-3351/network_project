@@ -5,11 +5,12 @@
 
 #include<stdio.h>
 #include "user.h"
-#include "workspace.h"
+// #include "workspace.h"
+// #include "message.h"
 
 #define MAX_LENGTH 100
 
-typedef struct {
+typedef struct Room{
     int ID;
     char name[MAX_LENGTH];
     User users[MAX_USERS_IN_ROOM];

@@ -3,7 +3,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-User *updateListUser() {
+void updateListUser() {
     User user;
     int i = 0;
     FILE *f;
@@ -26,7 +26,6 @@ User *updateListUser() {
         }
     }
     fclose(f);
-    return headUser;
 }
 
 int isExistingUser(char *input){
@@ -38,10 +37,11 @@ int isExistingUser(char *input){
             isExist = 1;
         ptr = ptr->next;
     }
+    free(ptr);
     return isExist;
 }
 
-User *findUserByID(int ID){
+User findUserByID(int ID){
     User *user = headUser;
     while (user != NULL){
         if (user->ID == ID)
@@ -49,7 +49,7 @@ User *findUserByID(int ID){
         else 
             user = user->next;
     }
-    return user;
+    return *user;
 }
 
 void signIn();
