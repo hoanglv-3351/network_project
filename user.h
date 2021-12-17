@@ -5,10 +5,14 @@
 
 #define MAX_LENGTH 100
 
+int number_of_users = 0;
+
 typedef struct {
     char ID[MAX_LENGTH];
     char name[MAX_LENGTH];
     char password[MAX_LENGTH];
+    int isLogin;
+    struct User *next;
 } User;
 
 #endif
