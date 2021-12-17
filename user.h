@@ -5,14 +5,20 @@
 
 #define MAX_LENGTH 100
 
-int number_of_users = 0;
+int number_of_users = 0;    
 
-typedef struct {
+typedef struct User{
     int ID;
     char name[MAX_LENGTH];
     char password[MAX_LENGTH];
     int isLogin;
     struct User *next;
 } User;
+
+User *headUser = NULL;
+User *cur = NULL;
+
+User *updateListUser();
+User *findUserByID(int ID);
 
 #endif

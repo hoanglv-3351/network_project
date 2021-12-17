@@ -7,19 +7,21 @@
 
 #include<stdio.h>
 #include "room.h"
-#include "user.h"
+#include "user.c"
 
-typedef struct {
+int number_of_wsps = 0;
+
+typedef struct WorkSpace{
     int ID;
     char name[MAX_LENGTH];
     Room rooms[MAX_ROOM];
-    User host;
+    User *host;
     User users[MAX_USERS_IN_WSP];
+    struct WorkSpace *next;
 } WorkSpace;
 
 WorkSpace createWorkSpace(User host, char* wsp_name);
 void addUserToWSP(WorkSpace workspace, User user);
-void createRoom(WorkSpace workspace, char* room_name);
 
 void kick(WorkSpace workspace, User user);
 void join(WorkSpace workspace);

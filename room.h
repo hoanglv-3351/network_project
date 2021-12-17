@@ -14,7 +14,7 @@ typedef struct {
     char name[MAX_LENGTH];
     User host;
     User users[MAX_USERS_IN_ROOM];
-    WorkSpace onWSP;
+    struct WorkSpace *onWSP;
 } Room;
 
 Room createRoom(User host, char* room_name);
