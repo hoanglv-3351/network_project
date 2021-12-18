@@ -19,6 +19,6 @@ User *headUser = NULL;
 User *cur = NULL;
 
 void updateListUser();
-User findUserByID(int ID);
+User *findUserByID(int ID);
 
 #endif

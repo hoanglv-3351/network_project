@@ -13,6 +13,7 @@ void updateListUser() {
     }
     else{
         fscanf(f, "%d\n", &number_of_users);
+        if(number_of_users == 0) return;
         while (!feof(f)){
             fscanf(f, "%d\n%s\n%s\n", &(user.ID), user.name, user.password);
             user.isLogin = 0;
@@ -41,7 +42,7 @@ int isExistingUser(char *input){
     return isExist;
 }
 
-User findUserByID(int ID){
+User *findUserByID(int ID){
     User *user = headUser;
     while (user != NULL){
         if (user->ID == ID)
@@ -49,7 +50,7 @@ User findUserByID(int ID){
         else 
             user = user->next;
     }
-    return *user;
+    return user;
 }
 
 void signIn();

@@ -15,9 +15,9 @@ int number_of_wsps = 0;
 typedef struct WorkSpace{
     int ID;
     char name[MAX_LENGTH];
-    Room rooms[MAX_ROOM];
-    User host;
-    User users[MAX_USERS_IN_WSP];
+    Room *rooms[MAX_ROOM];
+    User *host;
+    User *users[MAX_USERS_IN_WSP];
     int num_of_users;
     int num_of_rooms;
     struct WorkSpace *next;

@@ -20,9 +20,11 @@ void updateListWSP() {
     }
     else{
         fscanf(f, "%d\n", &number_of_wsps);
+        if(number_of_wsps == 0) return;
         while (!feof(f)){
-            fscanf(f, "%d\n%d\n%s\n", &workspace.ID, &(workspace.host.ID), workspace.name);
-            workspace.host = findUserByID(workspace.host.ID);
+            workspace.host = (User *)malloc(sizeof(User));
+            fscanf(f, "%d\n%d\n%s\n", &workspace.ID, &(workspace.host->ID), workspace.name);
+            workspace.host = findUserByID(workspace.host->ID);
 
             WorkSpace *wspList = (WorkSpace *)malloc(sizeof(WorkSpace));
             strcpy(wspList->name, workspace.name);
@@ -97,8 +99,9 @@ void updateWSP(WorkSpace *workspace){
     else{
         int count=0;
         while (!feof(f)){
-            // workspace->rooms[count] = malloc(sizeof(Room));
-            fscanf(f, "%d\n%s\n", &(workspace->rooms[count].ID), workspace->rooms[count].name);
+            workspace->rooms[count] = malloc(sizeof(Room));
+            workspace->rooms[count] = (Room *)malloc(sizeof(Room));
+            fscanf(f, "%d\n%s\n", &(workspace->rooms[count]->ID), workspace->rooms[count]->name);
             count++;
         }
         workspace->num_of_rooms = count;
@@ -122,11 +125,21 @@ void updateWSP(WorkSpace *workspace){
     }
 }
 
+Message *findMessByID(int ID){
+    Message *message = headMess;
+    while (message != NULL){
+        if (message->ID == ID)
+            break;
+        else 
+            message = message->next;
+    }
+    return message;
+}
+
 void updateMessage(WorkSpace workspace, Room room) {
     Message message;
     int count = 0;
     FILE *f;
-
     char wspID[5], roomID[5];
     char filename[MAX_LENGTH];
     sprintf(wspID, "%d", workspace.ID);
@@ -145,9 +158,12 @@ void updateMessage(WorkSpace workspace, Room room) {
     }
     else{
         fscanf(f, "%d\n", &number_of_messages);
+
         while (!feof(f)){
             message.parent = (Message *)malloc(sizeof(Message));
-            fscanf(f, "%d\n%d\n%d\n%d\n", &(message.ID), &(message.parent->ID), &(message.sendUser.ID), &(message.receiveUser.ID));
+            message.sendUser = (User *)malloc(sizeof(User));
+            message.receiveUser = (User *)malloc(sizeof(User));
+            fscanf(f, "%d\n%d\n%d\n%d\n", &(message.ID), &(message.parent->ID), &(message.sendUser->ID), &(message.receiveUser->ID));
             fgets(message.content, MAX_LENGTH, f);
             if(message.content[strlen(message.content) - 1] == '\n') {
                 message.content[strlen(message.content) - 1] = '\0';
@@ -157,10 +173,10 @@ void updateMessage(WorkSpace workspace, Room room) {
             strcpy(messList->content, message.content);  
        
             messList->ID = message.ID;
-            messList->parent = (Message *)malloc(sizeof(Message));
-            messList->parent->ID = message.parent->ID;
-            messList->sendUser = findUserByID(message.sendUser.ID);
-            messList->receiveUser = findUserByID(message.receiveUser.ID);
+
+            messList->parent = findMessByID(message.parent->ID);
+            messList->sendUser = findUserByID(message.sendUser->ID);
+            messList->receiveUser = findUserByID(message.receiveUser->ID);
 
             messList->next = headMess;
             headMess = messList;
@@ -173,7 +189,7 @@ int hasRoom(WorkSpace workspace, char *room_name) {
     int isHavingRoom = 0;
     int i;
     for(i=0 ; i<workspace.num_of_rooms ; i++) {
-        if(strcmp(workspace.rooms[i].name, room_name)) {
+        if(strcmp(workspace.rooms[i]->name, room_name)) {
             isHavingRoom = 1;
             return isHavingRoom;
         }
@@ -187,11 +203,13 @@ void signUp();
 // int main(){
 //     updateListWSP();
 //     WorkSpace *p = headWSP;
-//     WorkSpace *test = headWSP->next;
+    
 //     while(p != NULL) {
-//         printf("%d --- %s --- %s\n", p->ID, p->name, p->host.name);
+//         if(p->host != NULL)
+//             printf("%d --- %s --- %s\n", p->ID, p->name, p->host->name);
 //         p = p->next;
 //     }
+
 //     User *x = headUser;
 
 //     while(x!= NULL) {
@@ -200,23 +218,36 @@ void signUp();
 //     }
 
 //     x = headUser;
-//     if(isInWSP(*x, *test)) {
-//         printf("%s is in WSP!\n", x->name);
-//     }
-//     updateWSP(test);
-//     printf("%d --- %s\n", test->rooms[0].ID, test->rooms[0].name);
-//     printf("%d --- %s\n", test->rooms[1].ID, test->rooms[1].name);
-//     printf("there are %d rooms and %d people in this wsp\n", test->num_of_rooms, test->num_of_users);
-    
-//     if(hasRoom(*test, "room2")) {
-//         printf("Room 2 has been created in this WSP\n");
-//     }
+//     WorkSpace *test = headWSP->next;
+//     if(test != NULL && x != NULL) {
+//         if(isInWSP(*x, *test)) {
+//             printf("%s is in WSP!\n", x->name);
+//         }
+        
+//         updateWSP(test);
 
-//     updateMessage(*test, test->rooms[1]);
+//         for(int i=0 ; i < test->num_of_rooms ; i++) {
+//             if(test->rooms[i] != NULL) {
+//                 printf("%d --- %s\n", test->rooms[i]->ID, test->rooms[i]->name);
+//             }
+//         }
+//         printf("there are %d rooms and %d people in this wsp\n", test->num_of_rooms, test->num_of_users);
+        
+//         if(hasRoom(*test, "room2")) {
+//             printf("Room 2 has been created in this WSP\n");
+//         }
+
+//         updateMessage(*test, *(test->rooms[1]));
+//     }
+    
 
 //     Message *mess = headMess;
 //     while(mess != NULL) {
-//         printf("%d - %s\n", mess->ID, mess->content);
+//         if(mess->parent != NULL) {
+//             printf("%d - %s --> reply to %d\n", mess->ID, mess->content, mess->parent->ID);
+//         }
+//         else 
+//             printf("%d - %s\n", mess->ID, mess->content);
 //         mess = mess->next;
 //     }
 // }

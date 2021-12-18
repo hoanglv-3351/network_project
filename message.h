@@ -13,13 +13,15 @@ int number_of_messages = 0;
 typedef struct Message{
     int ID;
     char content[MAX_LENGTH];
-    User sendUser;
-    User receiveUser;
+    User *sendUser;
+    User *receiveUser;
     struct Message *parent;
     struct Message *next;
 } Message;
 
 Message *headMess = NULL;
 Message *curMess = NULL;
+
+Message *findMessByID(int ID);
 
 #endif
