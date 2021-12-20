@@ -16,9 +16,10 @@ typedef struct User{
 } User;
 
 User *headUser = NULL;
-User *cur = NULL;
+User *curUser = NULL;
 
 void updateListUser();
+int isExistingUser(char *input);
 User *findUserByID(int ID);
 
 #endif

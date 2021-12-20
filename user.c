@@ -3,7 +3,20 @@
 #include<string.h>
 #include<stdlib.h>
 
+void insertUser(User *user) {
+    if(headUser == NULL) {
+        headUser = user;
+        curUser = user;
+    }
+    else {
+        curUser->next = user;
+        curUser = curUser->next;
+        curUser->next = NULL;
+    }
+}
+
 void updateListUser() {
+    headUser = NULL;
     User user;
     int i = 0;
     FILE *f;
@@ -22,20 +35,21 @@ void updateListUser() {
             strcpy(userList->name, user.name);
             strcpy(userList->password, user.password);
             userList->ID = user.ID;
-            userList->next = headUser;
-            headUser = userList;
+            insertUser(userList);
         }
     }
     fclose(f);
 }
 
-int isExistingUser(char *input){
+int isExistingUser(char *name){
     int isExist = 0;
     User *ptr;
     ptr = headUser;
     while (ptr != NULL){
-        if (strcmp(input, ptr->name) == 0)
+        if (strcmp(name, ptr->name) == 0) {
             isExist = 1;
+            break;
+        }
         ptr = ptr->next;
     }
     free(ptr);
@@ -52,9 +66,6 @@ User *findUserByID(int ID){
     }
     return user;
 }
-
-void signIn();
-void signUp();
 
 // int main(){
 //     User *userList = updateListUser();

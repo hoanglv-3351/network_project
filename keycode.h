@@ -16,17 +16,17 @@ typedef enum {
   KEY_EXIT, // #EXIT
 } KeyCode;
  
-#define KEY_SIGNUP "#SIGNUP"
-#define KEY_LOGIN "#LOGIN"
-#define KEY_LOGOUT "#LOGOUT"
-#define KEY_NEW "#NEW"
-#define KEY_JOIN "#JOIN"
-#define KEY_ADD "#ADD"
-#define KEY_KICK "#KICK"
-#define KEY_SEND "#SEND"
-#define KEY_REPLY "#REPLY"
-#define KEY_FIND "#FIND"
-#define KEY_OUT "#OUT"
-#define KEY_EXIT "#EXIT"
+// #define KEY_SIGNUP "#SIGNUP"
+// #define KEY_LOGIN "#LOGIN"
+// #define KEY_LOGOUT "#LOGOUT"
+// #define KEY_NEW "#NEW"
+// #define KEY_JOIN "#JOIN"
+// #define KEY_ADD "#ADD"
+// #define KEY_KICK "#KICK"
+// #define KEY_SEND "#SEND"
+// #define KEY_REPLY "#REPLY"
+// #define KEY_FIND "#FIND"
+// #define KEY_OUT "#OUT"
+// #define KEY_EXIT "#EXIT"
 
 #endif

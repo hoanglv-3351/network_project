@@ -10,6 +10,7 @@ WorkSpace *headWSP = NULL;
 WorkSpace *curWSP = NULL;
 
 void updateListWSP() {
+    headWSP = NULL;
     updateListUser();
     WorkSpace workspace;
     int i = 0;
