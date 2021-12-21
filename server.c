@@ -10,6 +10,7 @@
 
 #include "user.h"
 #include "functions.c"
+#include "readCode.c"
 
 #define BACKLOG 2 /* Number of allowed connections */
 #define BUFF_SIZE 1024
@@ -70,6 +71,7 @@ int main(int argc, char const *argv[])
     //Step 4: Communicate with client
     int isLoggedin = 0;
     User *user = NULL;
+    char msg[MAX_LENGTH];
 
 
 
@@ -95,12 +97,46 @@ int main(int argc, char const *argv[])
             close(conn_sock);
             continue;
         }
-        else if (pid == 0)
-        {
+        else if (pid == 0) {
             //kill() gui tin hieu den progress khac
             //child process
             //do whatever you want
             //handleSignal()
+            
+            printf("Receiving data ...\n");
+
+            char **tokens = NULL; 
+            while(tokens == NULL) {
+
+                tokens = readCode(conn_sock);
+
+                if(strcmp(tokens[0], "#LOGIN") == 0) {
+                    if(user == NULL){
+                        printf("Username: %s\n", tokens[1]);
+                        printf("Password: %s\n", tokens[2]);
+                        sleep(1);
+                        user = logIn(conn_sock, tokens[1], tokens[2]);
+                        printf("-------------------------\n");
+                    }
+                    else {
+                        printf("User has been logged in.\n");
+                        strcpy(msg, "OK");
+                        send(conn_sock, msg, strlen(msg), 0);
+                        tokens = NULL;
+                    }
+                }
+
+                else if(strcmp(tokens[0], "#SIGNUP") == 0) {
+                    signUp(conn_sock, tokens[1], tokens[2]);
+                }
+
+
+                else {
+                    tokens = NULL;
+                    // strcpy(msg, "Wrong code");
+                    // send(conn_sock, msg, strlen(msg), 0);
+                }
+            }
 
             // // SIGNUP
             // while(1){
@@ -125,15 +161,11 @@ int main(int argc, char const *argv[])
             //     printf("-------------------------\n");
             // }
             // // END SIGNUP
-          
+
             // // LOGIN
             // while(user == NULL){
-            //     char username[BUFF_SIZE];
-            //     char password[BUFF_SIZE];
-            //     memset(username, 0, strlen(username));
-            //     memset(password, 0, strlen(password));
             //     printf("Receiving data ...\n");
-            //     //receives username from client
+            //     // receives username from client
             //     recv(conn_sock, username, BUFF_SIZE, 0);
             //     send(conn_sock, "Received username\n", sizeof("Received username\n"), 0);
             //     username[strlen(username)-1] = '\0';
@@ -146,6 +178,7 @@ int main(int argc, char const *argv[])
             //     printf("data is here!\n");
             //     sleep(1);
             //     user = logIn(conn_sock, username, password);
+                
             //     printf("-------------------------\n");
             // }
             // // END LOGIN

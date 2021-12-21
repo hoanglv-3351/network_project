@@ -5,11 +5,9 @@
 
 
 #include"user.h"
-#include"token.h"
 
-int currentChar;
-
-char** str_split(char* a_str, const char a_delim) {
+char** str_split(char* a_str, const char a_delim)
+{
     char** result    = 0;
     size_t count     = 0;
     char* tmp        = a_str;
@@ -56,15 +54,16 @@ char** str_split(char* a_str, const char a_delim) {
     return result;
 }
 
-void readCode() {
+char** readCode(int conn_sock) {
     char code[MAX_LENGTH];
+    // memset(code, 0, strlen(code));
+    //receives username from client
+    int codeLen = recv(conn_sock, code, MAX_LENGTH, 0);
+    send(conn_sock, "Success code\n", sizeof("Success code\n"), 0);
+    code[codeLen-1] = '\0';
+    printf("code: %s\n", code);
 
-    printf("Enter code: \n");
-    gets(code);
-
-    char** tokens;
-
-    printf("code = %s \n\n", code);
+    char** tokens = NULL;
 
     tokens = str_split(code, ' ');
 
@@ -81,9 +80,10 @@ void readCode() {
         }
         printf("\n");
         // end print
+
         if(strcmp(tokens[0], "#SIGNUP") == 0) {
             if(tokens[2] == NULL || tokens[3] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call sign up func
@@ -91,16 +91,17 @@ void readCode() {
         }
         else if(strcmp(tokens[0], "#LOGIN") == 0) {
             if(tokens[2] == NULL || tokens[3] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call login func
+                // return (User *)logIn(conn_sock, tokens[1], tokens[2]);
             }
         }
 
         else if(strcmp(tokens[0], "#LOGOUT") == 0) {
             if(tokens[1] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call logout func
@@ -109,7 +110,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#NEW") == 0) {
             if(tokens[1] == NULL || tokens[2] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call new func
@@ -118,7 +119,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#JOIN") == 0) {
             if(tokens[1] == NULL || tokens[2] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call join func
@@ -127,7 +128,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#ADD") == 0) {
             if(tokens[2] == NULL || tokens[3] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call add func
@@ -136,7 +137,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#KICK") == 0) {
             if(tokens[1] == NULL || tokens[2] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call sign up func
@@ -145,7 +146,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#SEND") == 0) {
             if(tokens[1] == NULL || tokens[2] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call send func
@@ -154,7 +155,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#REPLY") == 0) {
             if(tokens[2] == NULL || tokens[3] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call reply func
@@ -163,7 +164,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#FIND") == 0) {
             if(tokens[1] == NULL || tokens[2] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call find func
@@ -172,7 +173,7 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#OUT") == 0) {
             if(tokens[1] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call out func
@@ -181,18 +182,19 @@ void readCode() {
 
         else if(strcmp(tokens[0], "#EXIT") == 0) {
             if(tokens[1] != NULL) {
-                printf("Sai roi baby\n");
+                tokens == NULL;
             }
             else {
                 // call exit func
             }            
         }
 
-        else printf("Wrong code\n");
-        
+        tokens == NULL;
     }
+    return tokens;
 }
 
-int main() {
-    readCode();
-}
+
+// int main() {
+//     char **token = readCode(0);
+// }

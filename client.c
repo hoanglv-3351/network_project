@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "user.h"
+
 #define BUFF_SIZE 8192
 
 int isValidIpAddress(char *ipAddress)
@@ -56,17 +58,28 @@ int main(int argc, char *argv[])
     while (1)
     {
         //send message
-        char username[BUFF_SIZE];
-        int usernameLen;
-        char password[BUFF_SIZE];
-        int passwordLen;
-        char usernameMsg[BUFF_SIZE];
-        char passwordMsg[BUFF_SIZE];
-        char systemMsg[BUFF_SIZE];
+        char code[MAX_LENGTH];
+        int codeLen;
+
+        char usernameMsg[MAX_LENGTH];
+        char passwordMsg[MAX_LENGTH];
+        char systemMsg[MAX_LENGTH];
         int systemMsg_bytes_received;
         int bytes_sent;
         int bytes_received;
         
+        
+        // READ CODE FROM USER
+            memset(code, '\0', (strlen(code) + 1));
+            fgets(code, MAX_LENGTH, stdin);
+            codeLen = strlen(code);
+            bytes_sent = send(client_sock, code, codeLen, 0);
+            bytes_received = recv(client_sock, usernameMsg, MAX_LENGTH - 1, 0);
+            usernameMsg[bytes_received] = '\0';
+            systemMsg_bytes_received = recv(client_sock, systemMsg, MAX_LENGTH - 1, 0);
+            systemMsg[systemMsg_bytes_received-1] = '\0';
+        // END READ CODE
+
         // // LOGIN
         // //send username to server
         // printf("Username: ");
@@ -85,20 +98,20 @@ int main(int argc, char *argv[])
         // bytes_received = recv(client_sock, passwordMsg, BUFF_SIZE - 1, 0);
         // passwordMsg[bytes_received] = '\0';
 
-        // // receive login status
+        // receive login status
         // systemMsg_bytes_received = recv(client_sock, systemMsg, BUFF_SIZE - 1, 0);
-        // if (systemMsg_bytes_received <= 0)
-        // {
-        //     printf("\nError!Cannot receive data from sever!\n");
-        //     break;
-        // }
-        // systemMsg[systemMsg_bytes_received] = '\0';
-        // printf("%s\n", systemMsg);
-        // if (strcmp(systemMsg, "Hello! Successful login.\n") == 0) {
-        //     close(client_sock);
-        //     return(1);
-        // }
-        // // END LOGIN
+        if (systemMsg_bytes_received <= 0)
+        {
+            printf("\nError!Cannot receive data from sever!\n");
+            break;
+        }
+        systemMsg[systemMsg_bytes_received] = '\0';
+        printf("%s\n", systemMsg);
+        if (strcmp(systemMsg, "Hello! Successful login.\n") == 0) {
+            close(client_sock);
+            return(1);
+        }
+        // END LOGIN
 
 
         // // SIGN UP
