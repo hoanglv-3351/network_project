@@ -69,6 +69,7 @@ int main(int argc, char const *argv[])
     
     //Step 4: Communicate with client
     int isLoggedin = 0;
+    User *user = NULL;
 
 
 
@@ -101,32 +102,8 @@ int main(int argc, char const *argv[])
             //do whatever you want
             //handleSignal()
 
-            // SIGNUP
-            while(1){
-                char username[BUFF_SIZE];
-                char password[BUFF_SIZE];
-                memset(username, 0, strlen(username));
-                memset(password, 0, strlen(password));
-                printf("Receiving data ...\n");
-                //receives username from client
-                recv(conn_sock, username, BUFF_SIZE, 0);
-                send(conn_sock, "Received username\n", sizeof("Received username\n"), 0);
-                username[strlen(username)-1] = '\0';
-                printf("Username: %s\n", username);
-                //receives password from client
-                recv(conn_sock, password, BUFF_SIZE, 0);
-                send(conn_sock, "Received password\n", sizeof("Received password\n"), 0);
-                password[strlen(password)-1] = '\0';
-                printf("Password: %s\n", password);
-                printf("data is here!\n");
-                sleep(1);
-                signUp(conn_sock, username, password);
-                printf("-------------------------\n");
-            }
-            // END SIGNUP
-          
-            // LOGIN
-            // while(!isLoggedin){
+            // // SIGNUP
+            // while(1){
             //     char username[BUFF_SIZE];
             //     char password[BUFF_SIZE];
             //     memset(username, 0, strlen(username));
@@ -134,20 +111,52 @@ int main(int argc, char const *argv[])
             //     printf("Receiving data ...\n");
             //     //receives username from client
             //     recv(conn_sock, username, BUFF_SIZE, 0);
-            //     send(conn_sock, "Success username\n", sizeof("Success username\n"), 0);
+            //     send(conn_sock, "Received username\n", sizeof("Received username\n"), 0);
             //     username[strlen(username)-1] = '\0';
             //     printf("Username: %s\n", username);
             //     //receives password from client
             //     recv(conn_sock, password, BUFF_SIZE, 0);
-            //     send(conn_sock, "Success password\n", sizeof("Success password\n"), 0);
+            //     send(conn_sock, "Received password\n", sizeof("Received password\n"), 0);
             //     password[strlen(password)-1] = '\0';
             //     printf("Password: %s\n", password);
             //     printf("data is here!\n");
             //     sleep(1);
-            //     logIn(conn_sock, username, password, &isLoggedin);
+            //     signUp(conn_sock, username, password);
             //     printf("-------------------------\n");
             // }
-            // END LOGIN
+            // // END SIGNUP
+          
+            // // LOGIN
+            // while(user == NULL){
+            //     char username[BUFF_SIZE];
+            //     char password[BUFF_SIZE];
+            //     memset(username, 0, strlen(username));
+            //     memset(password, 0, strlen(password));
+            //     printf("Receiving data ...\n");
+            //     //receives username from client
+            //     recv(conn_sock, username, BUFF_SIZE, 0);
+            //     send(conn_sock, "Received username\n", sizeof("Received username\n"), 0);
+            //     username[strlen(username)-1] = '\0';
+            //     printf("Username: %s\n", username);
+            //     //receives password from client
+            //     recv(conn_sock, password, BUFF_SIZE, 0);
+            //     send(conn_sock, "Received password\n", sizeof("Received password\n"), 0);
+            //     password[strlen(password)-1] = '\0';
+            //     printf("Password: %s\n", password);
+            //     printf("data is here!\n");
+            //     sleep(1);
+            //     user = logIn(conn_sock, username, password);
+            //     printf("-------------------------\n");
+            // }
+            // // END LOGIN
+
+            // // LOGOUT
+            // user->isLogin = 0;
+            // free(user);      
+            // if(user == NULL) {
+            //     printf("logout successfull ! \n");
+            // }      
+            // // END LOGOUT
 
 
             close(conn_sock);

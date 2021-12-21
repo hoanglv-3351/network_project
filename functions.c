@@ -62,13 +62,13 @@ void signUp(int conn_sock, char *name, char *password) {
     }
 }
 
-void logIn(int conn_sock, char *name, char *password, int *isLoggedin) {
+User *logIn(int conn_sock, char *name, char *password) {
     printf("---Log in---\n");
     printf("Username: %s\n", name);
     printf("Password: %s\n", password);
 
     do {
-        User *user;
+        User *user = NULL;
         user = headUser;
         while (user != NULL) {
             //check if username is exist or not
@@ -78,7 +78,7 @@ void logIn(int conn_sock, char *name, char *password, int *isLoggedin) {
                     char *msg = "Password is incorrect.\n";
                     send(conn_sock, msg, strlen(msg), 0);
                     printf("%s", msg);
-                    return;
+                    return user;
                 }
                 // login success
                 else {
@@ -86,20 +86,16 @@ void logIn(int conn_sock, char *name, char *password, int *isLoggedin) {
                     char *msg = "Hello! Successful login.\n";
                     send(conn_sock, msg, strlen(msg), 0);
                     printf("Done, sign in success\n");
-                    *isLoggedin = 1;
-                    return;
+                    return user;
                 }
-                
             }
-
             user = user->next;
         }
-            printf("ok\n");
         // if not exist
         char *msg = "This Account not exist!\n";
         send(conn_sock, msg, strlen(msg), 0);
         printf("Account \"%s\" is not exist.\n", name);
-        return;
+        return user;
            
     } while (1);
 }

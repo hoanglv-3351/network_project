@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         int bytes_sent;
         int bytes_received;
         
-        // LOGIN
+        // // LOGIN
         // //send username to server
         // printf("Username: ");
         // memset(username, '\0', (strlen(username) + 1));
@@ -98,28 +98,28 @@ int main(int argc, char *argv[])
         //     close(client_sock);
         //     return(1);
         // }
-        // END LOGIN
+        // // END LOGIN
 
 
-        // SIGN UP
-        //send username to server
-        printf("Username: ");
-        memset(username, '\0', (strlen(username) + 1));
-        fgets(username, BUFF_SIZE, stdin);
-        usernameLen = strlen(username);
-        bytes_sent = send(client_sock, username, usernameLen, 0);
-        bytes_received = recv(client_sock, usernameMsg, BUFF_SIZE - 1, 0);
-        printf("%s", usernameMsg);
-        usernameMsg[bytes_received] = '\0';
-        //send password to server
-        printf("Password: ");
-        memset(password, '\0', (strlen(password) + 1));
-        fgets(password, BUFF_SIZE, stdin);
-        passwordLen = strlen(password);
-        bytes_sent = send(client_sock, password, passwordLen, 0);
-        bytes_received = recv(client_sock, passwordMsg, BUFF_SIZE - 1, 0);
-        passwordMsg[bytes_received] = '\0';
-        // END SIGN UP
+        // // SIGN UP
+        // //send username to server
+        // printf("Username: ");
+        // memset(username, '\0', (strlen(username) + 1));
+        // fgets(username, BUFF_SIZE, stdin);
+        // usernameLen = strlen(username);
+        // bytes_sent = send(client_sock, username, usernameLen, 0);
+        // bytes_received = recv(client_sock, usernameMsg, BUFF_SIZE - 1, 0);
+        // printf("%s", usernameMsg);
+        // usernameMsg[bytes_received] = '\0';
+        // //send password to server
+        // printf("Password: ");
+        // memset(password, '\0', (strlen(password) + 1));
+        // fgets(password, BUFF_SIZE, stdin);
+        // passwordLen = strlen(password);
+        // bytes_sent = send(client_sock, password, passwordLen, 0);
+        // bytes_received = recv(client_sock, passwordMsg, BUFF_SIZE - 1, 0);
+        // passwordMsg[bytes_received] = '\0';
+        // // END SIGN UP
     }
 
     //Step 4: Close socket
