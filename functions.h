@@ -1,2 +1,2 @@
-void signUp(char *name, char *password);
-void logIn(char *name, char *password);
+void signUp(int conn_sock, char *name, char *password);
+void logIn(int conn_sock, char *name, char *password);

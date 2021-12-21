@@ -21,44 +21,48 @@ int isValid(char *str) {
     return valid;
 }
 
-void signUp(char *name, char *password) {
+void signUp(int conn_sock, char *name, char *password) {
     updateListUser(); //
+    char* msg;
 
     if(!isValid(name) || !isValid(password)) {
-        printf("Invalid name or password!\n");
+        msg = "Invalid name or password!\n";
+        send(conn_sock, msg, strlen(msg), 0);
+        printf("%s", msg);
         return;
     }
 
     if(isExistingUser(name)) {
-        printf("This user is already exist!\n");
+        msg = "This user is already exist!\n";
+        send(conn_sock, msg, strlen(msg), 0);
+        printf("%s", msg);
+        return;
     }
     else {
         number_of_users++;
         FILE *f;
-        if (!(f = fopen("db/users.txt", "w"))) {
-            printf("\n File not found!! \n\n");
-        }
-        else {
-            fprintf(f, "%d", number_of_users);
-            User *user = (User *)malloc(sizeof(User));
-            user->ID = number_of_users;
-            strcpy(user->name, name);
-            strcpy(user->password, password);    
-            insertUser(user);
+        f = fopen("db/users.txt", "w");
+        fprintf(f, "%d", number_of_users);
+        User *user = (User *)malloc(sizeof(User));
+        user->ID = number_of_users;
+        strcpy(user->name, name);
+        strcpy(user->password, password);    
+        insertUser(user);
 
-            User *ptr = headUser;
-            while (ptr != NULL) {
-                fprintf(f, "\n%d\n%s\n%s", ptr->ID, ptr->name, ptr->password);
-                ptr = ptr->next;
-            }
-            free(ptr);
+        User *ptr = headUser;
+        while (ptr != NULL) {
+            fprintf(f, "\n%d\n%s\n%s", ptr->ID, ptr->name, ptr->password);
+            ptr = ptr->next;
         }
+        free(ptr);
         fclose(f);
-        printf("Account %s is sign up successfully!\n", name);
+        msg = "Create new account successfully !\n";
+        send(conn_sock, msg, strlen(msg), 0);
+        printf("%s", msg);
     }
 }
 
-void logIn(char *name, char *password) {
+void logIn(int conn_sock, char *name, char *password, int *isLoggedin) {
     printf("---Log in---\n");
     printf("Username: %s\n", name);
     printf("Password: %s\n", password);
@@ -72,26 +76,28 @@ void logIn(char *name, char *password) {
                 // check password
                 if (strcmp(password, user->password) != 0) {
                     char *msg = "Password is incorrect.\n";
-                    // send(conn_sock, msg, strlen(msg), 0);
+                    send(conn_sock, msg, strlen(msg), 0);
                     printf("%s", msg);
+                    return;
                 }
                 // login success
                 else {
                     user->isLogin = 1;
                     char *msg = "Hello! Successful login.\n";
-                    //strcat(msg, ptr->m_username);
-                    // send(conn_sock, msg, strlen(msg), 0);
+                    send(conn_sock, msg, strlen(msg), 0);
                     printf("Done, sign in success\n");
+                    *isLoggedin = 1;
                     return;
                 }
                 
             }
+
             user = user->next;
         }
-
+            printf("ok\n");
         // if not exist
         char *msg = "This Account not exist!\n";
-        // send(conn_sock, msg, strlen(msg), 0);
+        send(conn_sock, msg, strlen(msg), 0);
         printf("Account \"%s\" is not exist.\n", name);
         return;
            
