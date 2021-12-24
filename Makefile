@@ -15,10 +15,10 @@ server.o: server.c
 	${CC} ${CFLAGS} server.c -pthread
 client.o: client.c
 	${CC} ${CFLAGS} client.c
-utils.o: utils.c
-	${CC} ${CFLAGS} utils.c
-user.o: user.c
-	${CC} ${CFLAGS} user.c
+utils.o: models/utils.c
+	${CC} ${CFLAGS} models/utils.c
+user.o: models/user.c
+	${CC} ${CFLAGS} models/user.c
 
 clean:
 	rm -f *.o *~

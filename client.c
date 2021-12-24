@@ -18,7 +18,7 @@ int sockfd = 0;
 
 void str_overwrite_stdout()
 {
-	printf("%s", "");
+	printf("%s", ">");
 	fflush(stdout);
 }
 

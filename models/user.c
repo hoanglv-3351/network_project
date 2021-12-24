@@ -178,7 +178,7 @@ User *searchUserByID(User * root, int ID)
 
 char *verifyAccount(User * root, char *name, char *password, int * flag)
 {
-    static char response[32];
+    static char response[64];
 
     User *p = searchUserByUsername(root, name);
         //check if username is exist or not

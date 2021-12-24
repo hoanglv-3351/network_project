@@ -10,8 +10,8 @@
 #include <sys/types.h>
 #include <signal.h>
 
-#include "user.h"
-#include "utils.h"
+#include "models/user.h"
+#include "models/utils.h"
 
 #define MAX_CLIENTS 100
 #define BUFFER_SZ 2048
@@ -143,7 +143,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 
   	username = strtok(NULL, s);
   	password = strtok(NULL, s);
-  	printf ("Username: - Pasword : %s %s\n", username, password);
+  	printf ("Username: %s - Pasword :  %s\n", username, password);
 
 
 	User * root = readUserFile("db/users.txt");
@@ -216,9 +216,18 @@ void *handle_client(void *arg)
 		{
 			if (strlen(buff_out) > 0)
 			{
+			
+				char name[32];
+				char tmp[BUFFER_SZ];
+				strcpy(tmp, buff_out);
+				strcpy(name, cli->info->name);
+				strcpy(name, strcat(name, " send: "));
+				
+				strcpy(buff_out,strcat(name, tmp));
+				
 				send_message_chat(buff_out, cli->info->ID);
 
-				str_trim_lf(buff_out, strlen(buff_out));
+				//str_trim_lf(buff_out, strlen(buff_out));
 				printf("%s -> %s\n", cli->info->name, buff_out);
 			}
 		}
@@ -304,11 +313,11 @@ int main(int argc, char **argv)
 		if ((cli_count + 1) == MAX_CLIENTS)
 		{
 			printf("Max clients reached. Rejected: ");
-			print_ip_addr(cli_addr);
-			printf(":%d\n", cli_addr.sin_port);
 			close(connfd);
 			continue;
 		}
+		print_ip_addr(cli_addr);
+		printf(":%d\n", cli_addr.sin_port);
 
 		/* Client settings */
 		client_t *cli = (client_t *)malloc(sizeof(client_t));
