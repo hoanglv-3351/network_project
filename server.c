@@ -215,7 +215,7 @@ void *handle_client(void *arg)
 		{
 			if (strlen(buff_out) > 0)
 			{
-
+				printf("%s -> %s\n", cli->info->name, buff_out);
 				const char s[2] = " ";
 				char tmp[BUFFER_SZ];
 				strcpy(tmp, buff_out);
@@ -231,9 +231,8 @@ void *handle_client(void *arg)
 				else if (strcmp(token, KEY_VIEW) == 0)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
-
 				}
-				else if (strcmp(token, KEY_WSP))
+				else if (strcmp(token, KEY_WSP) == 0)
 				{
 
 				}
@@ -251,7 +250,7 @@ void *handle_client(void *arg)
 				send_message_chat(buff_out, cli->info->ID);
 
 				//str_trim_lf(buff_out, strlen(buff_out));
-				printf("%s -> %s\n", cli->info->name, buff_out);
+				
 				}
 			}
 		}

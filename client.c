@@ -19,7 +19,7 @@
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 
-User *new= NULL;
+User *new = NULL;
 char username[10];
 
 void str_overwrite_stdout()
@@ -50,7 +50,7 @@ void catch_ctrl_c_and_exit(int sig)
 
 void send_msg_handler()
 {
-	
+
 	char buffer[BUFFER_SZ];
 
 	while (1)
@@ -65,22 +65,40 @@ void send_msg_handler()
 		}
 		else
 		{
-			
+
 			send(sockfd, buffer, strlen(buffer), 0);
 			if (strstr(buffer, KEY_LOGIN))
 			{
 				const char s[2] = " ";
-				char * token = strtok(buffer, s);
+				char *token = strtok(buffer, s);
 				token = strtok(NULL, s);
 				strcpy(username, token);
 			}
-			
 		}
 		bzero(buffer, BUFFER_SZ);
 	}
 	catch_ctrl_c_and_exit(2);
 }
-
+void process_message(char message[])
+{
+	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
+	{
+		User *root = readUserFile("db/users.txt");
+		new = searchUserByUsername(root, username);
+		printf("Welcome %s\n", new->name);
+		ScreenLoginSuccess();
+	}
+	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
+	{
+		printf("Your name is : %s\n", new->name);
+		printf("Your id is : %d\n", new->ID);
+		printf("Your password is %s\n", new->password);
+	}
+	else
+	{
+		printf("%s", message);
+	}
+}
 void recv_msg_handler()
 {
 	char message[BUFFER_SZ] = {};
@@ -89,19 +107,8 @@ void recv_msg_handler()
 		int receive = recv(sockfd, message, BUFFER_SZ, 0);
 		if (receive > 0)
 		{
-			
-			if (strcmp(message, MESS_LOGIN_SUCCESS ) == 0)
-			{
-				User *root = readUserFile("db/users.txt");			
-				new = searchUserByUsername(root, username);
-				printf("Welcome %s\n", new->name);
-				ScreenLoginSuccess();
-			}
-			else{
-				printf("%s", message);	
-			}
+			process_message(message);
 			str_overwrite_stdout();
-			
 		}
 		else if (receive == 0)
 		{
