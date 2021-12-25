@@ -40,7 +40,7 @@ void ScreenLoginSuccess(){
     printf( "\n ------ WELCOME WORKSPACE APP -----\n");
     yellow();
     printf( "\n (Here is some instructions for you)\n\n");
-    white();
+    reset();
     printf( " 1. Enter #VIEW to view your profile\n");
     printf( " 2. Enter #WPS_LIST to view all of your workspaces\n");
     printf( " 3. Enter #JOIN <workspace_name> to join a workspace.\n");
