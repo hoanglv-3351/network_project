@@ -12,6 +12,9 @@
 
 #include "models/user.h"
 #include "models/utils.h"
+#include "views/screen.h"
+#include "models/notice.h"
+#include "models/keycode.h"
 
 #define MAX_CLIENTS 100
 #define BUFFER_SZ 2048
@@ -24,7 +27,7 @@ typedef struct
 {
 	struct sockaddr_in address;
 	int sockfd;
-	User * info;
+	User *info;
 } client_t;
 
 client_t *clients[MAX_CLIENTS];
@@ -49,7 +52,6 @@ void str_trim_lf(char *arr, int length)
 		}
 	}
 }
-
 
 /* Add clients to queue */
 void queue_add(client_t *cli)
@@ -122,7 +124,7 @@ void send_message(char *s, client_t *cli)
 }
 void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 {
-	
+
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
 	if (receive <= 0)
 	{
@@ -132,39 +134,37 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	}
 
 	const char s[2] = " ";
-	char * token, *username, *password;
+	char *token, *username, *password;
 	token = strtok(buff_out, s);
-	if (strcmp(token, "#LOGIN") != 0)
+	if (strcmp(token, KEY_LOGIN) != 0)
 	{
 		send_message("Error input. Must begin by #LOGIN\nEnter: ", cli);
 		*leave_flag = 2;
 		return;
 	}
 
-  	username = strtok(NULL, s);
-  	password = strtok(NULL, s);
-  	printf ("Username: %s - Pasword :  %s\n", username, password);
+	username = strtok(NULL, s);
+	password = strtok(NULL, s);
+	printf("Username: %s - Pasword :  %s\n", username, password);
 
-
-	User * root = readUserFile("db/users.txt");
-	int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist 
-	char * response = verifyAccount(root, username, password, &logInStatus);
+	User *root = readUserFile("db/users.txt");
+	int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
+	char *response = verifyAccount(root, username, password, &logInStatus);
 	send_message(response, cli);
 
 	if (logInStatus != 0)
 	{
 		return;
 	}
+
 	*leave_flag = 1; // 1 is login success
 	cli->info = searchUserByUsername(root, username);
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
 }
 
-
 void processWorkspace(client_t *cli, char buff_out[], int *leave_flag)
 {
-
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -190,19 +190,9 @@ void *handle_client(void *arg)
 		{
 			break;
 		}
-		processLOGIN(cli, buff_out,&leave_flag);
+		processLOGIN(cli, buff_out, &leave_flag);
 		bzero(buff_out, BUFFER_SZ);
 	}
-	// while (1)
-	// {
-	// 	if (leave_flag == -1 )
-	// 	{
-	// 		break;
-	// 	}
-	// 	processWorkspace(cli, buff_out,&leave_flag);
-	// 	bzero(buff_out, BUFFER_SZ);
-	// }
-
 
 	while (1)
 	{
@@ -216,22 +206,35 @@ void *handle_client(void *arg)
 		{
 			if (strlen(buff_out) > 0)
 			{
-			
+
+				// const char s[2] = " ";
+				// char tmp[BUFFER_SZ];
+				// strcpy(tmp, buff_out);
+				// char *token = strtok(tmp, s);
+				// if (strcmp(token, KEY_LOGIN) == 0)
+				// {
+				// 	send_message("You have successfully logged in.\n", cli);
+				// }
+				// else if (strcmp(token, KEY_JOIN) == 0)
+				// {
+				// 	processWorkspace(cli, buff_out);
+				// }
+
 				char name[32];
 				char tmp[BUFFER_SZ];
 				strcpy(tmp, buff_out);
 				strcpy(name, cli->info->name);
 				strcpy(name, strcat(name, " send: "));
-				
-				strcpy(buff_out,strcat(name, tmp));
-				
+
+				strcpy(buff_out, strcat(name, tmp));
+
 				send_message_chat(buff_out, cli->info->ID);
 
 				//str_trim_lf(buff_out, strlen(buff_out));
 				printf("%s -> %s\n", cli->info->name, buff_out);
 			}
 		}
-		else if (receive == 0 || strcmp(buff_out, "#LOGOUT") == 0)
+		else if (receive == 0 || strcmp(buff_out, KEY_LOGOUT) == 0)
 		{
 			sprintf(buff_out, "%s Logout succesfully\n", cli->info->name);
 			printf("%s", buff_out);
@@ -323,7 +326,6 @@ int main(int argc, char **argv)
 		client_t *cli = (client_t *)malloc(sizeof(client_t));
 		cli->address = cli_addr;
 		cli->sockfd = connfd;
-		
 
 		/* Add client to the queue and fork thread */
 		queue_add(cli);

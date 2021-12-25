@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-
+#include "notice.h"
 
 User * createNewUser(int ID, char username[], char password[])
 {
@@ -188,19 +188,19 @@ char *verifyAccount(User * root, char *name, char *password, int * flag)
             if (strcmp(password, p->password) != 0)
             {
                 *flag = 1;
-                strcpy(response, "Password is incorrect.\nEnter again: ");
+                strcpy(response, MESS_RETRY_PASSWORD);
                 return response;
             }
             // login success
             else
             {
                 *flag = 0;
-                strcpy(response, "Login successfully.\n");
+                strcpy(response, MESS_LOGIN_SUCCESS);
                 return response;
             }
         }
     
     *flag=2;
-    strcpy(response, "This account not exist!\nEnter again: ");
+    strcpy(response, MESS_ACCOUNT_NOT_EXIST);
     return response;
 }

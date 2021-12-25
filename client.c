@@ -11,6 +11,8 @@
 
 #define BUFFER_SZ 2048
 
+#include "views/screen.h"
+#include "models/notice.h"
 // Global variables
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
@@ -18,7 +20,9 @@ int sockfd = 0;
 
 void str_overwrite_stdout()
 {
+	green();
 	printf("%s", ">");
+	reset();
 	fflush(stdout);
 }
 
@@ -73,7 +77,13 @@ void recv_msg_handler()
 		if (receive > 0)
 		{
 			printf("%s", message);
+			if (strcmp(message, MESS_LOGIN_SUCCESS ) == 0)
+			{
+				ScreenLoginSuccess();
+			}
 			str_overwrite_stdout();
+
+			
 		}
 		else if (receive == 0)
 		{
