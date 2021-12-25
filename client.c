@@ -12,11 +12,15 @@
 #define BUFFER_SZ 2048
 
 #include "views/screen.h"
-#include "models/notice.h"
+#include "models/signal.h"
+#include "models/user.h"
+#include "models/keycode.h"
 // Global variables
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 
+User *new= NULL;
+char username[10];
 
 void str_overwrite_stdout()
 {
@@ -55,13 +59,22 @@ void send_msg_handler()
 		fgets(buffer, BUFFER_SZ, stdin);
 		str_trim_lf(buffer, BUFFER_SZ);
 
-		if (strcmp(buffer, "#LOGOUT") == 0)
+		if (strcmp(buffer, KEY_LOGOUT) == 0)
 		{
 			break;
 		}
 		else
 		{
+			
 			send(sockfd, buffer, strlen(buffer), 0);
+			if (strstr(buffer, KEY_LOGIN))
+			{
+				const char s[2] = " ";
+				char * token = strtok(buffer, s);
+				token = strtok(NULL, s);
+				strcpy(username, token);
+			}
+			
 		}
 		bzero(buffer, BUFFER_SZ);
 	}
@@ -76,13 +89,18 @@ void recv_msg_handler()
 		int receive = recv(sockfd, message, BUFFER_SZ, 0);
 		if (receive > 0)
 		{
-			printf("%s", message);
+			
 			if (strcmp(message, MESS_LOGIN_SUCCESS ) == 0)
 			{
+				User *root = readUserFile("db/users.txt");			
+				new = searchUserByUsername(root, username);
+				printf("Welcome %s\n", new->name);
 				ScreenLoginSuccess();
 			}
+			else{
+				printf("%s", message);	
+			}
 			str_overwrite_stdout();
-
 			
 		}
 		else if (receive == 0)
@@ -107,15 +125,15 @@ int main(int argc, char **argv)
 
 	char *ip = "127.0.0.1";
 	int port = atoi(argv[1]);
-	char buffer[BUFFER_SZ];
+	//char buffer[BUFFER_SZ];
 
 	signal(SIGINT, catch_ctrl_c_and_exit);
 
 	printf("=== WELCOME TO THE CHATROOM ===\n");
 	printf("Please LOGIN. Command #LOGIN <username> <password>.\n");
 	printf("Enter: ");
-	fgets(buffer, BUFFER_SZ, stdin);
-	str_trim_lf(buffer, strlen(buffer));
+	//fgets(buffer, BUFFER_SZ, stdin);
+	//str_trim_lf(buffer, strlen(buffer));
 
 	struct sockaddr_in server_addr;
 
@@ -134,7 +152,7 @@ int main(int argc, char **argv)
 	}
 
 	// Send message
-	send(sockfd, buffer, sizeof(buffer), 0);
+	//send(sockfd, buffer, sizeof(buffer), 0);
 
 	pthread_t send_msg_thread;
 	if (pthread_create(&send_msg_thread, NULL, (void *)send_msg_handler, NULL) != 0)

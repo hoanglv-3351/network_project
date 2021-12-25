@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "notice.h"
+#include "signal.h"
 
 User * createNewUser(int ID, char username[], char password[])
 {
@@ -74,17 +74,27 @@ User * readUserFile(char filename[])
 
 User * searchUserByUsername(User * root, char name[])
 {
-    
     User *p =root;
     while (p != NULL)
     {
         if (strcmp(name, p->name) == 0)
         {
+            
             return p;
         }
         p = p->next;
     }
     return NULL; // 0 is not exist
+}
+void printAllUser(User * root)
+{
+    User *p =root;
+    while (p != NULL)
+    {
+        printf("%s\n", p->name);
+        p = p->next;
+    }
+
 }
 
 User *searchUserByID(User * root, int ID)

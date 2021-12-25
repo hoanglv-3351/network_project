@@ -9,18 +9,18 @@
 
 
 
-WorkSpace * createNewWorkSpace(User host, int id, int host_id, char* wsp_name){
+WorkSpace * createNewWorkspace(int id, int host_id, char  wsp_name[]){
     WorkSpace * new =  (WorkSpace *)malloc(sizeof(WorkSpace));
 
     new->ID = id;
-    new->host_id = host;
-    strcpy(new->name = wsp_name);
+    new->host_id = host_id;
+    strcpy(new->name, wsp_name);
     new->num_of_rooms = 0;
     new->num_of_users = 1; // always has 1 user : host
 
     // read Each WorkSpace users
     char filename[] = "workspace_users_";
-    strcat(filename, itoa(id));
+    strcat(filename, atoa(id));
     FILE *f;
     if (!(f = fopen(filename,  "r")))
     {
@@ -35,9 +35,9 @@ WorkSpace * createNewWorkSpace(User host, int id, int host_id, char* wsp_name){
 
     return new;
 }
-void insertWWorkspace(User * root, int ID, char username[], char password[])
+void insertWorkspace(User *root, int ID, int host_id, char name[])
 {
-  User * new = createNewWorkSpace(ID, username, password);
+  User * new = createNewWorkspace(ID, host_id, name);
   if(root==NULL)
     {
       new->next=root;
@@ -84,25 +84,25 @@ WorkSpace * readWorkspaceData(char filename[]){
                 check = 0;
             }
             else
-                insertWorkspace(root , id, host_id, wsp_name);
+                insertWorkspace(root, id, host_id, wsp_name);
         }
     }
     fclose(f);
     return root;
 }
-bool valueInArray(int val, int arr[])
+int valueInArray(int val, int arr[])
 {
     int i;
     for(i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
     {
         if(arr[i] == val)
-            return true;
+            return 1;
     }
-    return false;
+    return 0;
 }
 
 // input is a User, find all workspace user belong to
-int * findWorkSpaceForUser(User * u)
+int * findWorkSpaceForUser(WorkSpace *root, User * u)
 {
     int user_id = u->ID;
     WorkSpace *p =root;
@@ -110,7 +110,7 @@ int * findWorkSpaceForUser(User * u)
     int count = 0;
     while (p != NULL)
     {
-        if (valueInArray(user_id, p->user_id))
+        if (valueInArray(user_id, p->user_id) == 1)
         {
             list_wps[count++] = p->ID;
         } 

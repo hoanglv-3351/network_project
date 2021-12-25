@@ -1,11 +1,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
+
+
 #include <pthread.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -13,7 +17,7 @@
 #include "models/user.h"
 #include "models/utils.h"
 #include "views/screen.h"
-#include "models/notice.h"
+#include "models/signal.h"
 #include "models/keycode.h"
 
 #define MAX_CLIENTS 100
@@ -168,9 +172,7 @@ void processWorkspace(client_t *cli, char buff_out[], int *leave_flag)
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
 	char * token = strtok(buff_out, s);
-	token = strtok(NULL, s);
-
-
+	int wsp_id = atoi(strtok(NULL, s));
 
 }
 /* Handle all communication with the client */
@@ -226,16 +228,17 @@ void *handle_client(void *arg)
 				{
 					processWorkspace(cli, buff_out, &leave_flag);
 				}
-				else if (strcmp(token, KEY_VIEW)
+				else if (strcmp(token, KEY_VIEW) == 0)
 				{
+					send_message(MESS_VIEW_PROFILE, cli);
 
 				}
 				else if (strcmp(token, KEY_WSP))
 				{
-					
+
 				}
 
-				else (
+				else {
 
 				char name[32];
 				char tmp[BUFFER_SZ];
@@ -249,7 +252,7 @@ void *handle_client(void *arg)
 
 				//str_trim_lf(buff_out, strlen(buff_out));
 				printf("%s -> %s\n", cli->info->name, buff_out);
-				)
+				}
 			}
 		}
 		else if (receive == 0 || strcmp(buff_out, KEY_LOGOUT) == 0)

@@ -11,6 +11,7 @@
 #include "room.h"
 
 
+#define atoa(x) #x
 
 typedef struct WorkSpace{
     int ID;

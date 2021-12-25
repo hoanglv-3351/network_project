@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "../models/user.h"
+
 void red () {
   printf("\033[1;31m");
 }
@@ -50,7 +52,10 @@ void ScreenLoginSuccess(){
     reset();
 
 }
-
+void ScreenProfile(User * id)
+{
+  
+}
 // after join a workspace 
 void ScreenJoinRoom(){
 
