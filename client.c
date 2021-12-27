@@ -14,11 +14,21 @@
 #include "views/screen.h"
 #include "models/signal.h"
 #include "models/user.h"
+#include "models/workspace.h"
 #include "models/keycode.h"
+
 // Global variables
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 
+typedef struct
+{
+	struct sockaddr_in address;
+	int sockfd;
+	User *info;
+	int workspace_id;
+	int room_id;
+} client_t;
 User *new = NULL;
 char username[10];
 
@@ -94,6 +104,45 @@ void process_message(char message[])
 		printf("Your id is : %d\n", new->ID);
 		printf("Your password is %s\n", new->password);
 	}
+	else if (strcmp(message, MESS_VIEW_WSP) == 0)
+	{
+		WorkSpace *root = readWorkspaceData("db/workspaces.txt");
+		//printAllWSP(root);
+
+		int count = 0;
+		int *list_wps = findWSPForUser(root, new->ID, &count);
+
+		if (count == 0)
+		{
+			cyan();
+			printf("You don't have any workspaces.\nUse %s to create your workspace.\n", KEY_NEW);
+			reset();
+		}
+		else
+		{
+			printf("YOUR WORKSPACES\n");
+			for (int i = 0; i < count; i++)
+			{
+
+				{
+					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
+					printf(" (ID %d) %s ", tmp->ID, tmp->name);
+					if (tmp->host_id == new->ID)
+					{
+						green();
+						printf(" (admin) ");
+						reset();
+					}
+					printf("\n");
+				}
+			}
+		}
+	}
+	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
+	{
+		/* code */
+	}
+
 	else
 	{
 		printf("%s", message);

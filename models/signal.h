@@ -9,5 +9,7 @@
 
 
 #define MESS_VIEW_PROFILE "Here is your profile.\n"
+#define MESS_VIEW_WSP "View your workspaces\n"
+#define MESS_JOIN_WSP_SUCCESS "Join workspace succefully\n"
 
 #endif

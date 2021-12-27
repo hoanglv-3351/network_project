@@ -9,22 +9,26 @@
 
 
 
-WorkSpace * createNewWorkspace(int id, int host_id, char  wsp_name[]){
+WorkSpace * createNewWSP(int id, int host_id, char  wsp_name[]){
     WorkSpace * new =  (WorkSpace *)malloc(sizeof(WorkSpace));
 
     new->ID = id;
     new->host_id = host_id;
     strcpy(new->name, wsp_name);
     new->num_of_rooms = 0;
-    new->num_of_users = 1; // always has 1 user : host
+    new->num_of_users = 0; 
 
     // read Each WorkSpace users
-    char filename[] = "workspace_users_";
-    strcat(filename, atoa(id));
+    char filename[] = "db/workspace_users_";
+    char tmp[2];
+    sprintf(tmp, "%d", id);
+    strcat(filename, tmp);
+    strcat(filename, ".txt");
+    
     FILE *f;
     if (!(f = fopen(filename,  "r")))
     {
-        printf("\nCreate Workspace Database failed! File Users not found.\n\n");
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
     }
     else
     {
@@ -35,9 +39,9 @@ WorkSpace * createNewWorkspace(int id, int host_id, char  wsp_name[]){
 
     return new;
 }
-void insertWorkspace(User *root, int ID, int host_id, char name[])
+void insertWSP(WorkSpace *root, int ID, int host_id, char name[])
 {
-  User * new = createNewWorkspace(ID, host_id, name);
+  WorkSpace * new = createNewWSP(ID, host_id, name);
   if(root==NULL)
     {
       new->next=root;
@@ -45,13 +49,39 @@ void insertWorkspace(User *root, int ID, int host_id, char name[])
     }
   else
     {
-      User *p=root;
+      WorkSpace *p=root;
       //tro con tro toi cuoi danh sach lien ket
       while(p->next!=NULL) p=p->next; 
       p->next=new;
     }
 }
+void printAllWSP(User * root)
+{
+    WorkSpace *p =root;
+    while (p != NULL)
+    {
+        printf("Name %s\n", p->name);
+        printf("Num of users %d\n", p->num_of_users);
+        for (int i = 0; i < p->num_of_users; i++)
+        {
+            printf("%d ", p->user_id[i] );
 
+        }
+        p = p->next;
+    }
+
+}
+WorkSpace *searchWSPByID(WorkSpace * root, int ID)
+{
+    WorkSpace *p = root;
+    while (p != NULL)
+    {
+        if (p->ID == ID)
+            return p;
+        p = p->next;
+    }
+    return NULL;
+}
 
 WorkSpace * readWorkspaceData(char filename[]){
     WorkSpace *root;
@@ -65,7 +95,7 @@ WorkSpace * readWorkspaceData(char filename[]){
     //strcpy(filename, "db/users.txt")
     if (!(f = fopen(filename,  "r")))
     {
-        printf("\nCreate Workspace Database failed! File not found.\n\n");
+        printf("Create Workspace Database failed! File not found.\n");
     }
     else
     {
@@ -80,50 +110,48 @@ WorkSpace * readWorkspaceData(char filename[]){
 
             if (check == 1)
             {
-                root = createNewWorkspace(id, host_id,wsp_name);
+                root = createNewWSP(id, host_id,wsp_name);
                 check = 0;
             }
             else
-                insertWorkspace(root, id, host_id, wsp_name);
+                insertWSP(root, id, host_id, wsp_name);
         }
     }
     fclose(f);
     return root;
 }
-int valueInArray(int val, int arr[])
+int valueInArray(int val, int * arr)
 {
-    int i;
-    for(i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+    
+    for(int *i = arr; *i; i++)
     {
-        if(arr[i] == val)
+        if(*i == val)
             return 1;
     }
     return 0;
 }
 
 // input is a User, find all workspace user belong to
-int * findWorkSpaceForUser(WorkSpace *root, User * u)
-{
-    int user_id = u->ID;
+int * findWSPForUser(WorkSpace *root, int user_id, int * count)
+{    
     WorkSpace *p =root;
-    int list_wps[10];
-    int count = 0;
+    static int list_wps[10];
+    *count = 0;
     while (p != NULL)
     {
         if (valueInArray(user_id, p->user_id) == 1)
         {
-            list_wps[count++] = p->ID;
+            list_wps[*count] = p->ID;
+            *count = *count + 1;
         } 
         p = p->next;
     }
+    
     
     return list_wps; // 0 is not exist
 }
 
 void addUserToWSP(WorkSpace workspace, User user){
-
-}
-void updateMessage(WorkSpace workspace, Room room){
 
 }
 
@@ -133,3 +161,11 @@ void kick(WorkSpace workspace, User user){
 void join(WorkSpace workspace){
 
 }
+
+// int main(int argc, char const *argv[])
+// {
+    
+//     WorkSpace *root = readWorkspaceData("db/workspaces.txt");
+// 	printAllWSP(root);
+//     return 0;
+// }

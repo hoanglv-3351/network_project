@@ -30,8 +30,13 @@ typedef struct WorkSpace{
 WorkSpace * readWorkspaceData(char filename[]);
 
 
+WorkSpace * createNewWSP(int id, int host_id, char  wsp_name[]);
+void insertWSP(WorkSpace *root, int ID, int host_id, char name[]);
+WorkSpace *searchWSPByID(WorkSpace * root, int ID);
+void printAllWPS(WorkSpace *root);
 
-WorkSpace * createWorkSpace(User host, char* wsp_name);
+int * findWSPForUser(WorkSpace *root, int user_id, int * count);
+
 void addUserToWSP(WorkSpace workspace, User user);
 //void updateMessage(WorkSpace workspace, Room room);
 

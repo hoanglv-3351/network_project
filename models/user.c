@@ -44,7 +44,7 @@ User * readUserFile(char filename[])
     //strcpy(filename, "db/users.txt")
     if (!(f = fopen(filename,  "r")))
     {
-        printf("\nCreate User Database failed! File not found.\n\n");
+        printf("\nCreate User Database failed! File not found.\n");
     }
     else
     {

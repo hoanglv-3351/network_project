@@ -14,9 +14,11 @@
 #include <sys/types.h>
 #include <signal.h>
 
+#include "views/screen.h"
+
 #include "models/user.h"
 #include "models/utils.h"
-#include "views/screen.h"
+#include "models/workspace.h"
 #include "models/signal.h"
 #include "models/keycode.h"
 
@@ -32,6 +34,8 @@ typedef struct
 	struct sockaddr_in address;
 	int sockfd;
 	User *info;
+	int workspace_id;
+	int room_id;
 } client_t;
 
 client_t *clients[MAX_CLIENTS];
@@ -142,7 +146,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	token = strtok(buff_out, s);
 	if (strcmp(token, KEY_LOGIN) != 0)
 	{
-		send_message("Error input. Must begin by #LOGIN\nEnter: ", cli);
+		send_message("Error input. Must begin by #LOGIN\n", cli);
 		*leave_flag = 2;
 		return;
 	}
@@ -173,7 +177,7 @@ void processWorkspace(client_t *cli, char buff_out[], int *leave_flag)
 	const char s[2] = " ";
 	char * token = strtok(buff_out, s);
 	int wsp_id = atoi(strtok(NULL, s));
-
+	cli->workspace_id = wsp_id;
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -186,13 +190,12 @@ void *handle_client(void *arg)
 	2: in workspce 
 	3.: in chatrooom
 	*/
-	int leave_flag = 0; // 1 is login success, 2 is error/logout.
+	int leave_flag = 0; 
 
 	cli_count++;
 	client_t *cli = (client_t *)arg;
 
-	// Name
-
+	
 	while (1)
 	{
 		if (leave_flag == -1 || leave_flag == 1)
@@ -222,19 +225,19 @@ void *handle_client(void *arg)
 				char *token = strtok(tmp, s);
 				if (strcmp(token, KEY_LOGIN) == 0)
 				{
-					send_message("You have successfully logged in.\n", cli);
-				}
-				else if (strcmp(token, KEY_JOIN) == 0)
-				{
-					processWorkspace(cli, buff_out, &leave_flag);
-				}
+					send_message("You have successfully logged in. Not enough login again.\n", cli);
+				}	
 				else if (strcmp(token, KEY_VIEW) == 0)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
 				}
 				else if (strcmp(token, KEY_WSP) == 0)
 				{
-
+					send_message(MESS_VIEW_WSP, cli); 
+				}
+				else if (strcmp(token, KEY_JOIN) == 0)
+				{
+					processWorkspace(cli, buff_out, &leave_flag);
 				}
 
 				else {
@@ -346,6 +349,8 @@ int main(int argc, char **argv)
 		client_t *cli = (client_t *)malloc(sizeof(client_t));
 		cli->address = cli_addr;
 		cli->sockfd = connfd;
+		cli->workspace_id = -1;
+		cli->room_id = -1;
 
 		/* Add client to the queue and fork thread */
 		queue_add(cli);
