@@ -34,8 +34,12 @@ WorkSpace * createNewWSP(int id, int host_id, char  wsp_name[]);
 void insertWSP(WorkSpace *root, int ID, int host_id, char name[]);
 WorkSpace *searchWSPByID(WorkSpace * root, int ID);
 void printAllWPS(WorkSpace *root);
+void freeWorkspaceData(User *root);
 
+// input is a User, find all workspace user belong to
 int * findWSPForUser(WorkSpace *root, int user_id, int * count);
+// input is a user and a workspace, check if user belong to this wsp
+char * checkWSPForUser(WorkSpace *root, int user_id, int wsp_id, int * flag);
 
 void addUserToWSP(WorkSpace workspace, User user);
 //void updateMessage(WorkSpace workspace, Room room);

@@ -9,7 +9,6 @@
 #include <string.h>
 #include <ctype.h>
 
-
 #include <pthread.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -130,14 +129,14 @@ void send_message(char *s, client_t *cli)
 	}
 	pthread_mutex_unlock(&clients_mutex);
 }
-void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
+void processLOGIN(client_t *cli, char buff_out[], int *flag)
 {
 
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
 	if (receive <= 0)
 	{
 		printf("Error input.\n");
-		*leave_flag = 2;
+		*flag = 2;
 		return;
 	}
 
@@ -147,7 +146,6 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	if (strcmp(token, KEY_LOGIN) != 0)
 	{
 		send_message("Error input. Must begin by #LOGIN\n", cli);
-		*leave_flag = 2;
 		return;
 	}
 
@@ -156,28 +154,39 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	printf("Username: %s - Pasword :  %s\n", username, password);
 
 	User *root = readUserFile("db/users.txt");
-	int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
-	char *response = verifyAccount(root, username, password, &logInStatus);
+	// int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
+	char *response = verifyAccount(root, username, password, flag);
 	send_message(response, cli);
 
-	if (logInStatus != 0)
+	if (*flag != 1)
 	{
 		return;
 	}
 
-	*leave_flag = 1; // 1 is login success
+	//*flag = 1; // 1 is login success
+	printf("Herer \n");
 	cli->info = searchUserByUsername(root, username);
+	printf("Herer \n");
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
+
+	freeUserData(root);
 }
 
-void processWorkspace(client_t *cli, char buff_out[], int *leave_flag)
+void processWorkspace(client_t *cli, char buff_out[], int *flag)
 {
 	printf("%s -> %s\n", cli->info->name, buff_out);
-	const char s[2] = " ";
-	char * token = strtok(buff_out, s);
-	int wsp_id = atoi(strtok(NULL, s));
-	cli->workspace_id = wsp_id;
+	// const char s[2] = " ";
+	// char *token = strtok(buff_out, s);
+	// int wsp_id = atoi(strtok(NULL, s));
+	// WorkSpace *root = readWorkspaceData("db/workspaces.txt");
+	// int joinWSPStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
+	// char *response = checkWSPForUser(root,cli->info->ID, wsp_id, &joinWSPStatus );
+	// send_message(response, cli);
+
+	
+
+	// cli->workspace_id = wsp_id;
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -190,25 +199,24 @@ void *handle_client(void *arg)
 	2: in workspce 
 	3.: in chatrooom
 	*/
-	int leave_flag = 0; 
+	int flag = 0;
 
 	cli_count++;
 	client_t *cli = (client_t *)arg;
 
-	
 	while (1)
 	{
-		if (leave_flag == -1 || leave_flag == 1)
+		if (flag == -1 || flag == 1)
 		{
 			break;
 		}
-		processLOGIN(cli, buff_out, &leave_flag);
+		processLOGIN(cli, buff_out, &flag);
 		bzero(buff_out, BUFFER_SZ);
 	}
 
 	while (1)
 	{
-		if (leave_flag == -1)
+		if (flag == -1)
 		{
 			break; // error -> exit program
 		}
@@ -226,34 +234,34 @@ void *handle_client(void *arg)
 				if (strcmp(token, KEY_LOGIN) == 0)
 				{
 					send_message("You have successfully logged in. Not enough login again.\n", cli);
-				}	
+				}
 				else if (strcmp(token, KEY_VIEW) == 0)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
 				}
 				else if (strcmp(token, KEY_WSP) == 0)
 				{
-					send_message(MESS_VIEW_WSP, cli); 
+					send_message(MESS_VIEW_WSP, cli);
 				}
 				else if (strcmp(token, KEY_JOIN) == 0)
 				{
-					processWorkspace(cli, buff_out, &leave_flag);
+					processWorkspace(cli, buff_out, &flag);
 				}
 
-				else {
+				else
+				{
 
-				char name[32];
-				char tmp[BUFFER_SZ];
-				strcpy(tmp, buff_out);
-				strcpy(name, cli->info->name);
-				strcpy(name, strcat(name, " send: "));
+					char name[32];
+					char tmp[BUFFER_SZ];
+					strcpy(tmp, buff_out);
+					strcpy(name, cli->info->name);
+					strcpy(name, strcat(name, " send: "));
 
-				strcpy(buff_out, strcat(name, tmp));
+					strcpy(buff_out, strcat(name, tmp));
 
-				send_message_chat(buff_out, cli->info->ID);
+					send_message_chat(buff_out, cli->info->ID);
 
-				//str_trim_lf(buff_out, strlen(buff_out));
-				
+					//str_trim_lf(buff_out, strlen(buff_out));
 				}
 			}
 		}
@@ -262,12 +270,12 @@ void *handle_client(void *arg)
 			sprintf(buff_out, "%s Logout succesfully\n", cli->info->name);
 			printf("%s", buff_out);
 			send_message(buff_out, cli);
-			leave_flag = -1;
+			flag = -1;
 		}
 		else
 		{
 			printf("ERROR: -1\n");
-			leave_flag = -1;
+			flag = -1;
 		}
 
 		bzero(buff_out, BUFFER_SZ);

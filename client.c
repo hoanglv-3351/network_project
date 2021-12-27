@@ -23,15 +23,14 @@ int sockfd = 0;
 
 typedef struct
 {
-	struct sockaddr_in address;
-	int sockfd;
 	User *info;
 	int workspace_id;
 	int room_id;
 } client_t;
-User *new = NULL;
-char username[10];
 
+client_t *cli;
+
+char username[10];
 void str_overwrite_stdout()
 {
 	green();
@@ -94,15 +93,16 @@ void process_message(char message[])
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
 		User *root = readUserFile("db/users.txt");
-		new = searchUserByUsername(root, username);
-		printf("Welcome %s\n", new->name);
+		cli->info = searchUserByUsername(root, username);
+
+		printf("Welcome %s\n", cli->info->name);
 		ScreenLoginSuccess();
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{
-		printf("Your name is : %s\n", new->name);
-		printf("Your id is : %d\n", new->ID);
-		printf("Your password is %s\n", new->password);
+		printf("Your name is : %s\n", cli->info->name);
+		printf("Your id is : %d\n", cli->info->ID);
+		printf("Your password is %s\n", cli->info->password);
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
@@ -110,7 +110,7 @@ void process_message(char message[])
 		//printAllWSP(root);
 
 		int count = 0;
-		int *list_wps = findWSPForUser(root, new->ID, &count);
+		int *list_wps = findWSPForUser(root, cli->info->ID, &count);
 
 		if (count == 0)
 		{
@@ -127,7 +127,7 @@ void process_message(char message[])
 				{
 					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
 					printf(" (ID %d) %s ", tmp->ID, tmp->name);
-					if (tmp->host_id == new->ID)
+					if (tmp->host_id == cli->info->ID)
 					{
 						green();
 						printf(" (admin) ");
@@ -140,7 +140,8 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
-		/* code */
+
+
 	}
 
 	else
@@ -206,6 +207,12 @@ int main(int argc, char **argv)
 		printf("ERROR: connect\n");
 		return EXIT_FAILURE;
 	}
+
+	/* Client settings */
+	cli = (client_t *)malloc(sizeof(client_t));
+	cli->info = (User *)malloc(sizeof(User));
+	cli->workspace_id = -1;
+	cli->room_id = -1;
 
 	// Send message
 	//send(sockfd, buffer, sizeof(buffer), 0);
