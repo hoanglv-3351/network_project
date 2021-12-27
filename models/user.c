@@ -32,7 +32,7 @@ void insertUser(User *root, int ID, char username[], char password[])
     }
 }
 
-User *readUserFile(char filename[])
+User *readUserData(char filename[])
 {
     User *root;
 

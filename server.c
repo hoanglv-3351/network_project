@@ -153,7 +153,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 	password = strtok(NULL, s);
 	printf("Username: %s - Pasword :  %s\n", username, password);
 
-	User *root = readUserFile("db/users.txt");
+	User *root = readUserData("db/users.txt");
 	char *response = verifyAccount(root, username, password, flag);
 	send_message(response, cli);
 

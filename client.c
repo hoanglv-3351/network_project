@@ -81,6 +81,13 @@ void send_msg_handler()
 				token = strtok(NULL, s);
 				strcpy(username, token);
 			}
+			if (strstr(buffer, KEY_JOIN))
+			{
+				const char s[2] = " ";
+				char *token = strtok(buffer, s);
+				token = strtok(NULL, s);
+				cli->workspace_id = atoi(token);
+			}
 		}
 		bzero(buffer, BUFFER_SZ);
 	}
@@ -90,7 +97,7 @@ void process_message(char message[])
 {
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
-		User *root = readUserFile("db/users.txt");
+		User *root = readUserData("db/users.txt");
 		cli->info = searchUserByUsername(root, username);
 
 		printf("Welcome %s\n", cli->info->name);
@@ -137,7 +144,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
-		ScreenInWorkSpace();
+		ScreenInWSP(cli->workspace_id);
 	}
 
 	else

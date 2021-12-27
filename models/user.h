@@ -15,7 +15,7 @@ typedef struct User{
 } User;
 
 
-User * readUserFile(char filename[]);
+User * readUserData(char filename[]);
 
 
 User * createNewUser(int ID, char username[], char password[]);
