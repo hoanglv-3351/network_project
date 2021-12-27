@@ -61,7 +61,6 @@ void send_msg_handler()
 {
 
 	char buffer[BUFFER_SZ];
-
 	while (1)
 	{
 		str_overwrite_stdout();
@@ -74,7 +73,6 @@ void send_msg_handler()
 		}
 		else
 		{
-
 			send(sockfd, buffer, strlen(buffer), 0);
 			if (strstr(buffer, KEY_LOGIN))
 			{
@@ -123,7 +121,6 @@ void process_message(char message[])
 			printf("YOUR WORKSPACES\n");
 			for (int i = 0; i < count; i++)
 			{
-
 				{
 					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
 					printf(" (ID %d) %s ", tmp->ID, tmp->name);
@@ -140,8 +137,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
-
-
+		ScreenInWorkSpace();
 	}
 
 	else

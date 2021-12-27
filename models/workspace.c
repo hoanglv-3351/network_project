@@ -123,7 +123,36 @@ WorkSpace *readWorkspaceData(char filename[])
     fclose(f);
     return root;
 }
+// input wsp_id and read data of only this workspace
+WorkSpace *readOneWSPData(char filename[], int wsp_id)
+{
+    WorkSpace *root;
 
+    int id, host_id;
+    char wsp_name[32];
+
+    FILE *f;
+    if (!(f = fopen(filename, "r")))
+    {
+        printf("Create Workspace Database failed! File not found.\n");
+    }
+    else
+    {
+        int number_of_workspaces = 0;
+        fscanf(f, "%d\n", &number_of_workspaces);
+        if (number_of_workspaces == 0)
+            return NULL;
+        while (!feof(f))
+        {
+            fscanf(f, "%d\n%d\n%s\n", &id, &host_id, wsp_name);
+
+            if (id == wsp_id)
+                root = createNewWSP(wsp_id, host_id, wsp_name);
+        }
+    }
+    fclose(f);
+    return root;
+}
 int valueInArray(int val, int *arr)
 {
 
@@ -155,22 +184,13 @@ int *findWSPForUser(WorkSpace *root, int user_id, int *count)
 }
 
 // input is a user and a workspace, check if user belong to this wsp
-char * checkWSPForUser(WorkSpace *root, int user_id, int wsp_id, int * flag)
+char *checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
 {
-    WorkSpace *p = root;
-    while (p != NULL)
+    if (valueInArray(user_id, wsp->user_id) == 1)
     {
-        if (p->ID == wsp_id)
-        {
-            if (valueInArray(user_id, p->user_id) == 1)
-            {
-                *flag = 2;
-                return MESS_JOIN_WSP_SUCCESS;
-            }
-        }
-        p = p->next;
+        *flag = 2;
+        return MESS_JOIN_WSP_SUCCESS;
     }
-    
     return MESS_JOIN_WSP_FAILED;
 }
 

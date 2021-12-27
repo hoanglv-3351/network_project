@@ -154,7 +154,6 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 	printf("Username: %s - Pasword :  %s\n", username, password);
 
 	User *root = readUserFile("db/users.txt");
-	// int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
 	char *response = verifyAccount(root, username, password, flag);
 	send_message(response, cli);
 
@@ -163,10 +162,8 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 		return;
 	}
 
-	//*flag = 1; // 1 is login success
-	printf("Herer \n");
+
 	cli->info = searchUserByUsername(root, username);
-	printf("Herer \n");
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
 
@@ -176,17 +173,22 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 void processWorkspace(client_t *cli, char buff_out[], int *flag)
 {
 	printf("%s -> %s\n", cli->info->name, buff_out);
-	// const char s[2] = " ";
-	// char *token = strtok(buff_out, s);
-	// int wsp_id = atoi(strtok(NULL, s));
-	// WorkSpace *root = readWorkspaceData("db/workspaces.txt");
-	// int joinWSPStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
-	// char *response = checkWSPForUser(root,cli->info->ID, wsp_id, &joinWSPStatus );
-	// send_message(response, cli);
+	const char s[2] = " ";
+	char *token = strtok(buff_out, s);
+	int wsp_id = atoi(strtok(NULL, s));
 
-	
 
-	// cli->workspace_id = wsp_id;
+	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+	char *response = checkWSPForUser(wsp, cli->info->ID, flag);
+	send_message(response, cli);
+
+	if (flag != 2)
+	{
+		return;
+	}
+
+	cli->workspace_id = wsp_id;
+	free(wsp);
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
