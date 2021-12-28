@@ -88,6 +88,21 @@ void send_msg_handler()
 				token = strtok(NULL, s);
 				cli->workspace_id = atoi(token);
 			}
+			if (strstr(buffer, KEY_CONNECT))
+			{
+				const char s[2] = " ";
+				char *token = strtok(buffer, s);
+				token = strtok(NULL, s);
+				cli->room_id = atoi(token);
+			}
+			if (strstr(buffer, KEY_OUT))
+			{
+				cli->workspace_id = -1;
+			}
+			if (strstr(buffer, KEY_OUTROOM))
+			{
+				cli->room_id = -1;
+			}
 		}
 		bzero(buffer, BUFFER_SZ);
 	}
@@ -146,7 +161,11 @@ void process_message(char message[])
 	{
 		ScreenInWSP(cli->workspace_id);
 	}
-
+	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS))
+	{
+		printf("%s", message);
+	}
+	
 	else
 	{
 		printf("%s", message);

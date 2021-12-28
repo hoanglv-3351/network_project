@@ -25,7 +25,7 @@
 #define BUFFER_SZ 2048
 
 static _Atomic unsigned int cli_count = 0;
-static int uid = 10;
+//static int uid = 10;
 
 /* Client structure */
 typedef struct
@@ -98,7 +98,7 @@ void queue_remove(int uid)
 }
 
 /* Send message to all clients except sender */
-void send_message_chat(char *s, int uid)
+void send_message_chat(char *s, client_t *cli)
 {
 	pthread_mutex_lock(&clients_mutex);
 
@@ -106,12 +106,15 @@ void send_message_chat(char *s, int uid)
 	{
 		if (clients[i])
 		{
-			if (clients[i]->info->ID != uid)
+			if (clients[i]->workspace_id == cli->workspace_id && clients[i]->room_id == cli->room_id)
 			{
-				if (write(clients[i]->sockfd, s, strlen(s)) < 0)
+				if (clients[i]->info->ID != cli->info->ID)
 				{
-					perror("ERROR: write to descriptor failed");
-					break;
+					if (write(clients[i]->sockfd, s, strlen(s)) < 0)
+					{
+						perror("ERROR: write to descriptor failed");
+						break;
+					}
 				}
 			}
 		}
@@ -131,12 +134,11 @@ void send_message(char *s, client_t *cli)
 }
 void processLOGIN(client_t *cli, char buff_out[], int *flag)
 {
-
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
 	if (receive <= 0)
 	{
 		printf("Error input.\n");
-		*flag = 2;
+		*flag = -1;
 		return;
 	}
 
@@ -162,7 +164,6 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 		return;
 	}
 
-
 	cli->info = searchUserByUsername(root, username);
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
@@ -177,17 +178,37 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	char *token = strtok(buff_out, s);
 	int wsp_id = atoi(strtok(NULL, s));
 
-
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
 	char *response = checkWSPForUser(wsp, cli->info->ID, flag);
 	send_message(response, cli);
+	
 
-	if (flag != 2)
+	if (*flag != 2)
+	{
+		return;
+	}
+	
+	cli->workspace_id = wsp_id;
+	free(wsp);
+}
+
+void processChatroom(client_t *cli, char buff_out[], int *flag)
+{
+	printf("%s -> %s\n", cli->info->name, buff_out);
+	const char s[2] = " ";
+	char *token = strtok(buff_out, s);
+	int id = atoi(strtok(NULL, s));
+
+	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", cli->workspace_id);
+	char *response = checkAvailableID(wsp, id, flag);
+	send_message(response, cli);
+
+	if (*flag != 3)
 	{
 		return;
 	}
 
-	cli->workspace_id = wsp_id;
+	cli->room_id = id;
 	free(wsp);
 }
 /* Handle all communication with the client */
@@ -208,6 +229,7 @@ void *handle_client(void *arg)
 
 	while (1)
 	{
+		printf("Flag 1 = %d\n",flag);
 		if (flag == -1 || flag == 1)
 		{
 			break;
@@ -218,6 +240,7 @@ void *handle_client(void *arg)
 
 	while (1)
 	{
+		printf("Flag 2 = %d\n",flag);
 		if (flag == -1)
 		{
 			break; // error -> exit program
@@ -249,27 +272,45 @@ void *handle_client(void *arg)
 				{
 					processWorkspace(cli, buff_out, &flag);
 				}
+				else if (strcmp(token, KEY_CONNECT) == 0)
+				{
+					processChatroom(cli, buff_out, &flag);
+				}
+				else if (strcmp(token, KEY_OUTROOM) == 0)
+				{
+					cli->room_id = -1;
+				}
+				else if (strcmp(token, KEY_OUT) == 0)
+				{
+					cli->workspace_id = -1;
+				}
+				else if (1)//(cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					printf("Here.\n");
+					// if (flag == -1)
+					// {
+					// 	break;
+					// }
+					// char name[32];
+					// char tmp[BUFFER_SZ];
+					// strcpy(tmp, buff_out);
+					// strcpy(name, strcat(tmp, "From "));
+					// strcpy(name, strcat(name, cli->info->name));
+					// strcpy(name, strcat(name, " : "));
 
+					// strcpy(buff_out, strcat(name, tmp));
+					// send_message_chat(buff_out, cli);
+				}
 				else
 				{
-
-					char name[32];
-					char tmp[BUFFER_SZ];
-					strcpy(tmp, buff_out);
-					strcpy(name, cli->info->name);
-					strcpy(name, strcat(name, " send: "));
-
-					strcpy(buff_out, strcat(name, tmp));
-
-					send_message_chat(buff_out, cli->info->ID);
-
+					send_message(MESS_ERROR, cli);
 					//str_trim_lf(buff_out, strlen(buff_out));
 				}
 			}
 		}
 		else if (receive == 0 || strcmp(buff_out, KEY_LOGOUT) == 0)
 		{
-			sprintf(buff_out, "%s Logout succesfully\n", cli->info->name);
+			sprintf(buff_out, "%s logout succesfully\n", cli->info->name);
 			printf("%s", buff_out);
 			send_message(buff_out, cli);
 			flag = -1;
@@ -352,6 +393,7 @@ int main(int argc, char **argv)
 			close(connfd);
 			continue;
 		}
+		printf("Accept connection from ");
 		print_ip_addr(cli_addr);
 		printf(":%d\n", cli_addr.sin_port);
 

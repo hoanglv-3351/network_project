@@ -42,7 +42,8 @@ void freeWorkspaceData(User *root);
 int * findWSPForUser(WorkSpace *root, int user_id, int * count);
 // input is a user and a workspace, check if user belong to this wsp
 char * checkWSPForUser(WorkSpace *root, int user_id, int * flag);
-
+//input is a wsp and a room id/user id, check if this wsp contains the room/user
+char *checkAvailableID(WorkSpace *wsp, int id, int *flag);
 
 
 void addUserToWSP(WorkSpace workspace, User user);

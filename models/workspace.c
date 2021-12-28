@@ -57,7 +57,7 @@ void insertWSP(WorkSpace *root, int ID, int host_id, char name[])
         p->next = new;
     }
 }
-void printAllWSP(User *root)
+void printAllWSP(WorkSpace *root)
 {
     WorkSpace *p = root;
     while (p != NULL)
@@ -192,6 +192,22 @@ char *checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
         return MESS_JOIN_WSP_SUCCESS;
     }
     return MESS_JOIN_WSP_FAILED;
+}
+
+char *checkAvailableID(WorkSpace *wsp, int id, int *flag)
+{
+    if (valueInArray(id, wsp->user_id) == 1)
+    {
+        *flag = 3;
+        return MESS_JOIN_ROOM_SUCCESS;
+    }
+    // if (valueInArray(id, wsp->room_id) == 1)
+    // {
+    //     *flag = 3;
+    //     return MESS_JOIN_ROOM_SUCCESS;
+    // }
+    return MESS_INVALID_ID;
+
 }
 
 void addUserToWSP(WorkSpace workspace, User user)
