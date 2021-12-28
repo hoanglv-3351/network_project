@@ -173,6 +173,11 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 
 void processWorkspace(client_t *cli, char buff_out[], int *flag)
 {
+	if (cli->workspace_id != -1)
+	{
+		send_message(MESS_IN_WSP, cli);
+		return;
+	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
 	char *token = strtok(buff_out, s);
@@ -181,23 +186,52 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
 	char *response = checkWSPForUser(wsp, cli->info->ID, flag);
 	send_message(response, cli);
-	
 
 	if (*flag != 2)
 	{
 		return;
 	}
-	
+
 	cli->workspace_id = wsp_id;
+	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
 	free(wsp);
+}
+int createFakeRoom(int a, int b)
+{
+	char s1[3];
+	char s2[3];
+	if (a < b)
+	{
+		sprintf(s1, "%d", a*10);
+		sprintf(s2, "%d", b);
+	}
+	else
+	{
+		sprintf(s1, "%d", b*10);
+		sprintf(s2, "%d", a);
+	}
+	strcat(s1, s2);
+	int c = atoi(s1);
+	return c;
 }
 
 void processChatroom(client_t *cli, char buff_out[], int *flag)
 {
+	if (cli->room_id != -1)
+	{
+		send_message(MESS_IN_ROOM, cli);
+		return;
+	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
 	char *token = strtok(buff_out, s);
 	int id = atoi(strtok(NULL, s));
+
+	if (id == cli->info->ID)
+	{
+		send_message(MESS_ERROR_SELFCHAT, cli);
+		return;
+	}
 
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", cli->workspace_id);
 	char *response = checkAvailableID(wsp, id, flag);
@@ -207,8 +241,13 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	{
 		return;
 	}
-
-	cli->room_id = id;
+	if (id % 2 == 1) // connect only a user
+	{
+		cli->room_id = createFakeRoom(cli->info->ID, id);
+	}
+	else //connect to a room contains many users
+		cli->room_id = id;
+	printf("%s join room %d\n", cli->info->name, cli->room_id);
 	free(wsp);
 }
 /* Handle all communication with the client */
@@ -229,7 +268,7 @@ void *handle_client(void *arg)
 
 	while (1)
 	{
-		printf("Flag 1 = %d\n",flag);
+		printf("Flag 1 = %d\n", flag);
 		if (flag == -1 || flag == 1)
 		{
 			break;
@@ -240,7 +279,7 @@ void *handle_client(void *arg)
 
 	while (1)
 	{
-		printf("Flag 2 = %d\n",flag);
+		printf("Flag 2 = %d\n", flag);
 		if (flag == -1)
 		{
 			break; // error -> exit program
@@ -284,22 +323,23 @@ void *handle_client(void *arg)
 				{
 					cli->workspace_id = -1;
 				}
-				else if (1)//(cli->workspace_id != -1 && cli->room_id != -1)
+				else if (cli->workspace_id != -1 && cli->room_id != -1)
 				{
-					printf("Here.\n");
-					// if (flag == -1)
-					// {
-					// 	break;
-					// }
+					printf("Here \n");
+					if (flag == -1)
+					{
+						break;
+					}
 					// char name[32];
-					// char tmp[BUFFER_SZ];
-					// strcpy(tmp, buff_out);
-					// strcpy(name, strcat(tmp, "From "));
-					// strcpy(name, strcat(name, cli->info->name));
-					// strcpy(name, strcat(name, " : "));
+					
+					// strcat(name, "From ");
+					// strcat(name, cli->info->name);
+					// strcat(name, ": ");
+					// strcat(name, buff_out);
 
-					// strcpy(buff_out, strcat(name, tmp));
-					// send_message_chat(buff_out, cli);
+					// strcpy(buff_out, name);
+					// printf("Mess: %s\n", buff_out);
+					send_message_chat(buff_out, cli);
 				}
 				else
 				{
