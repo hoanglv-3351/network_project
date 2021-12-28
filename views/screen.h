@@ -19,7 +19,7 @@ void reset ();
 
 void ScreenLoginSuccess();
 void ScreenJoinRoom();
-void ScreenInWorkSpace();
+void ScreenInWSP();
 
 
 

@@ -9,14 +9,15 @@
 #include <string.h>
 #include <ctype.h>
 
-
 #include <pthread.h>
 #include <sys/types.h>
 #include <signal.h>
 
+#include "views/screen.h"
+
 #include "models/user.h"
 #include "models/utils.h"
-#include "views/screen.h"
+#include "models/workspace.h"
 #include "models/signal.h"
 #include "models/keycode.h"
 
@@ -24,7 +25,7 @@
 #define BUFFER_SZ 2048
 
 static _Atomic unsigned int cli_count = 0;
-static int uid = 10;
+//static int uid = 10;
 
 /* Client structure */
 typedef struct
@@ -32,6 +33,8 @@ typedef struct
 	struct sockaddr_in address;
 	int sockfd;
 	User *info;
+	int workspace_id;
+	int room_id;
 } client_t;
 
 client_t *clients[MAX_CLIENTS];
@@ -95,7 +98,7 @@ void queue_remove(int uid)
 }
 
 /* Send message to all clients except sender */
-void send_message_chat(char *s, int uid)
+void send_message_chat(char *s, client_t *cli)
 {
 	pthread_mutex_lock(&clients_mutex);
 
@@ -103,12 +106,15 @@ void send_message_chat(char *s, int uid)
 	{
 		if (clients[i])
 		{
-			if (clients[i]->info->ID != uid)
+			if (clients[i]->workspace_id == cli->workspace_id && clients[i]->room_id == cli->room_id)
 			{
-				if (write(clients[i]->sockfd, s, strlen(s)) < 0)
+				if (clients[i]->info->ID != cli->info->ID)
 				{
-					perror("ERROR: write to descriptor failed");
-					break;
+					if (write(clients[i]->sockfd, s, strlen(s)) < 0)
+					{
+						perror("ERROR: write to descriptor failed");
+						break;
+					}
 				}
 			}
 		}
@@ -126,14 +132,13 @@ void send_message(char *s, client_t *cli)
 	}
 	pthread_mutex_unlock(&clients_mutex);
 }
-void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
+void processLOGIN(client_t *cli, char buff_out[], int *flag)
 {
-
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
 	if (receive <= 0)
 	{
 		printf("Error input.\n");
-		*leave_flag = 2;
+		*flag = -1;
 		return;
 	}
 
@@ -142,8 +147,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	token = strtok(buff_out, s);
 	if (strcmp(token, KEY_LOGIN) != 0)
 	{
-		send_message("Error input. Must begin by #LOGIN\nEnter: ", cli);
-		*leave_flag = 2;
+		send_message("Error input. Must begin by #LOGIN\n", cli);
 		return;
 	}
 
@@ -151,29 +155,100 @@ void processLOGIN(client_t *cli, char buff_out[], int *leave_flag)
 	password = strtok(NULL, s);
 	printf("Username: %s - Pasword :  %s\n", username, password);
 
-	User *root = readUserFile("db/users.txt");
-	int logInStatus = 0; // 0 is success, 1 is wrong pass, 2 is account not exist
-	char *response = verifyAccount(root, username, password, &logInStatus);
+	User *root = readUserData("db/users.txt");
+	char *response = verifyAccount(root, username, password, flag);
 	send_message(response, cli);
 
-	if (logInStatus != 0)
+	if (*flag != 1)
 	{
 		return;
 	}
 
-	*leave_flag = 1; // 1 is login success
 	cli->info = searchUserByUsername(root, username);
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
+
+	freeUserData(root);
 }
 
-void processWorkspace(client_t *cli, char buff_out[], int *leave_flag)
+void processWorkspace(client_t *cli, char buff_out[], int *flag)
 {
+	if (cli->workspace_id != -1)
+	{
+		send_message(MESS_IN_WSP, cli);
+		return;
+	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
-	char * token = strtok(buff_out, s);
+	char *token = strtok(buff_out, s);
 	int wsp_id = atoi(strtok(NULL, s));
 
+	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+	char *response = checkWSPForUser(wsp, cli->info->ID, flag);
+	send_message(response, cli);
+
+	if (*flag != 2)
+	{
+		return;
+	}
+
+	cli->workspace_id = wsp_id;
+	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
+	free(wsp);
+}
+int createFakeRoom(int a, int b)
+{
+	char s1[3];
+	char s2[3];
+	if (a < b)
+	{
+		sprintf(s1, "%d", a*10);
+		sprintf(s2, "%d", b);
+	}
+	else
+	{
+		sprintf(s1, "%d", b*10);
+		sprintf(s2, "%d", a);
+	}
+	strcat(s1, s2);
+	int c = atoi(s1);
+	return c;
+}
+
+void processChatroom(client_t *cli, char buff_out[], int *flag)
+{
+	if (cli->room_id != -1)
+	{
+		send_message(MESS_IN_ROOM, cli);
+		return;
+	}
+	printf("%s -> %s\n", cli->info->name, buff_out);
+	const char s[2] = " ";
+	char *token = strtok(buff_out, s);
+	int id = atoi(strtok(NULL, s));
+
+	if (id == cli->info->ID)
+	{
+		send_message(MESS_ERROR_SELFCHAT, cli);
+		return;
+	}
+
+	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", cli->workspace_id);
+	char *response = checkAvailableID(wsp, id, flag);
+	send_message(response, cli);
+
+	if (*flag != 3)
+	{
+		return;
+	}
+	if (id % 2 == 1) // connect only a user
+	{
+		cli->room_id = createFakeRoom(cli->info->ID, id);
+	}
+	else //connect to a room contains many users
+		cli->room_id = id;
+	printf("%s join room %d\n", cli->info->name, cli->room_id);
+	free(wsp);
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -186,26 +261,26 @@ void *handle_client(void *arg)
 	2: in workspce 
 	3.: in chatrooom
 	*/
-	int leave_flag = 0; // 1 is login success, 2 is error/logout.
+	int flag = 0;
 
 	cli_count++;
 	client_t *cli = (client_t *)arg;
 
-	// Name
-
 	while (1)
 	{
-		if (leave_flag == -1 || leave_flag == 1)
+		printf("Flag 1 = %d\n", flag);
+		if (flag == -1 || flag == 1)
 		{
 			break;
 		}
-		processLOGIN(cli, buff_out, &leave_flag);
+		processLOGIN(cli, buff_out, &flag);
 		bzero(buff_out, BUFFER_SZ);
 	}
 
 	while (1)
 	{
-		if (leave_flag == -1)
+		printf("Flag 2 = %d\n", flag);
+		if (flag == -1)
 		{
 			break; // error -> exit program
 		}
@@ -215,57 +290,75 @@ void *handle_client(void *arg)
 		{
 			if (strlen(buff_out) > 0)
 			{
-
+				printf("%s -> %s\n", cli->info->name, buff_out);
 				const char s[2] = " ";
 				char tmp[BUFFER_SZ];
 				strcpy(tmp, buff_out);
 				char *token = strtok(tmp, s);
 				if (strcmp(token, KEY_LOGIN) == 0)
 				{
-					send_message("You have successfully logged in.\n", cli);
-				}
-				else if (strcmp(token, KEY_JOIN) == 0)
-				{
-					processWorkspace(cli, buff_out, &leave_flag);
+					send_message("You have successfully logged in. Not enough login again.\n", cli);
 				}
 				else if (strcmp(token, KEY_VIEW) == 0)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
-
 				}
-				else if (strcmp(token, KEY_WSP))
+				else if (strcmp(token, KEY_WSP) == 0)
 				{
-
+					send_message(MESS_VIEW_WSP, cli);
 				}
+				else if (strcmp(token, KEY_JOIN) == 0)
+				{
+					processWorkspace(cli, buff_out, &flag);
+				}
+				else if (strcmp(token, KEY_CONNECT) == 0)
+				{
+					processChatroom(cli, buff_out, &flag);
+				}
+				else if (strcmp(token, KEY_OUTROOM) == 0)
+				{
+					cli->room_id = -1;
+				}
+				else if (strcmp(token, KEY_OUT) == 0)
+				{
+					cli->workspace_id = -1;
+				}
+				else if (cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					printf("Here \n");
+					if (flag == -1)
+					{
+						break;
+					}
+					// char name[32];
+					
+					// strcat(name, "From ");
+					// strcat(name, cli->info->name);
+					// strcat(name, ": ");
+					// strcat(name, buff_out);
 
-				else {
-
-				char name[32];
-				char tmp[BUFFER_SZ];
-				strcpy(tmp, buff_out);
-				strcpy(name, cli->info->name);
-				strcpy(name, strcat(name, " send: "));
-
-				strcpy(buff_out, strcat(name, tmp));
-
-				send_message_chat(buff_out, cli->info->ID);
-
-				//str_trim_lf(buff_out, strlen(buff_out));
-				printf("%s -> %s\n", cli->info->name, buff_out);
+					// strcpy(buff_out, name);
+					// printf("Mess: %s\n", buff_out);
+					send_message_chat(buff_out, cli);
+				}
+				else
+				{
+					send_message(MESS_ERROR, cli);
+					//str_trim_lf(buff_out, strlen(buff_out));
 				}
 			}
 		}
 		else if (receive == 0 || strcmp(buff_out, KEY_LOGOUT) == 0)
 		{
-			sprintf(buff_out, "%s Logout succesfully\n", cli->info->name);
+			sprintf(buff_out, "%s logout succesfully\n", cli->info->name);
 			printf("%s", buff_out);
 			send_message(buff_out, cli);
-			leave_flag = -1;
+			flag = -1;
 		}
 		else
 		{
 			printf("ERROR: -1\n");
-			leave_flag = -1;
+			flag = -1;
 		}
 
 		bzero(buff_out, BUFFER_SZ);
@@ -340,6 +433,7 @@ int main(int argc, char **argv)
 			close(connfd);
 			continue;
 		}
+		printf("Accept connection from ");
 		print_ip_addr(cli_addr);
 		printf(":%d\n", cli_addr.sin_port);
 
@@ -347,6 +441,8 @@ int main(int argc, char **argv)
 		client_t *cli = (client_t *)malloc(sizeof(client_t));
 		cli->address = cli_addr;
 		cli->sockfd = connfd;
+		cli->workspace_id = -1;
+		cli->room_id = -1;
 
 		/* Add client to the queue and fork thread */
 		queue_add(cli);

@@ -14,14 +14,23 @@
 #include "views/screen.h"
 #include "models/signal.h"
 #include "models/user.h"
+#include "models/workspace.h"
 #include "models/keycode.h"
+
 // Global variables
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 
-User *new= NULL;
-char username[10];
+typedef struct
+{
+	User *info;
+	int workspace_id;
+	int room_id;
+} client_t;
 
+client_t *cli;
+
+char username[10];
 void str_overwrite_stdout()
 {
 	green();
@@ -50,9 +59,8 @@ void catch_ctrl_c_and_exit(int sig)
 
 void send_msg_handler()
 {
-	
-	char buffer[BUFFER_SZ];
 
+	char buffer[BUFFER_SZ];
 	while (1)
 	{
 		str_overwrite_stdout();
@@ -65,22 +73,104 @@ void send_msg_handler()
 		}
 		else
 		{
-			
 			send(sockfd, buffer, strlen(buffer), 0);
 			if (strstr(buffer, KEY_LOGIN))
 			{
 				const char s[2] = " ";
-				char * token = strtok(buffer, s);
+				char *token = strtok(buffer, s);
 				token = strtok(NULL, s);
 				strcpy(username, token);
 			}
-			
+			if (strstr(buffer, KEY_JOIN))
+			{
+				const char s[2] = " ";
+				char *token = strtok(buffer, s);
+				token = strtok(NULL, s);
+				cli->workspace_id = atoi(token);
+			}
+			if (strstr(buffer, KEY_CONNECT))
+			{
+				const char s[2] = " ";
+				char *token = strtok(buffer, s);
+				token = strtok(NULL, s);
+				cli->room_id = atoi(token);
+			}
+			if (strstr(buffer, KEY_OUT))
+			{
+				cli->workspace_id = -1;
+			}
+			if (strstr(buffer, KEY_OUTROOM))
+			{
+				cli->room_id = -1;
+			}
 		}
 		bzero(buffer, BUFFER_SZ);
 	}
 	catch_ctrl_c_and_exit(2);
 }
+void process_message(char message[])
+{
+	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
+	{
+		User *root = readUserData("db/users.txt");
+		cli->info = searchUserByUsername(root, username);
 
+		printf("Welcome %s\n", cli->info->name);
+		ScreenLoginSuccess();
+	}
+	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
+	{
+		printf("Your name is : %s\n", cli->info->name);
+		printf("Your id is : %d\n", cli->info->ID);
+		printf("Your password is %s\n", cli->info->password);
+	}
+	else if (strcmp(message, MESS_VIEW_WSP) == 0)
+	{
+		WorkSpace *root = readWorkspaceData("db/workspaces.txt");
+		//printAllWSP(root);
+
+		int count = 0;
+		int *list_wps = findWSPForUser(root, cli->info->ID, &count);
+
+		if (count == 0)
+		{
+			cyan();
+			printf("You don't have any workspaces.\nUse %s to create your workspace.\n", KEY_NEW);
+			reset();
+		}
+		else
+		{
+			printf("YOUR WORKSPACES\n");
+			for (int i = 0; i < count; i++)
+			{
+				{
+					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
+					printf(" (ID %d) %s ", tmp->ID, tmp->name);
+					if (tmp->host_id == cli->info->ID)
+					{
+						green();
+						printf(" (admin) ");
+						reset();
+					}
+					printf("\n");
+				}
+			}
+		}
+	}
+	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
+	{
+		ScreenInWSP(cli->workspace_id);
+	}
+	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS))
+	{
+		printf("%s", message);
+	}
+	
+	else
+	{
+		printf("%s", message);
+	}
+}
 void recv_msg_handler()
 {
 	char message[BUFFER_SZ] = {};
@@ -89,19 +179,8 @@ void recv_msg_handler()
 		int receive = recv(sockfd, message, BUFFER_SZ, 0);
 		if (receive > 0)
 		{
-			
-			if (strcmp(message, MESS_LOGIN_SUCCESS ) == 0)
-			{
-				User *root = readUserFile("db/users.txt");			
-				new = searchUserByUsername(root, username);
-				printf("Welcome %s\n", new->name);
-				ScreenLoginSuccess();
-			}
-			else{
-				printf("%s", message);	
-			}
+			process_message(message);
 			str_overwrite_stdout();
-			
 		}
 		else if (receive == 0)
 		{
@@ -150,6 +229,12 @@ int main(int argc, char **argv)
 		printf("ERROR: connect\n");
 		return EXIT_FAILURE;
 	}
+
+	/* Client settings */
+	cli = (client_t *)malloc(sizeof(client_t));
+	cli->info = (User *)malloc(sizeof(User));
+	cli->workspace_id = -1;
+	cli->room_id = -1;
 
 	// Send message
 	//send(sockfd, buffer, sizeof(buffer), 0);

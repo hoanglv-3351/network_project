@@ -15,12 +15,16 @@ typedef enum {
   KEY_ADD, // admin add a user to a wsp: #ADD <workspace_id> <user_id> 
   KEY_KICK, // admin kick user to a wsp:  #KICK <workspace_id> <user_id>
 
+  KEY_CONNECT, // connect to a user/room to join a chat room: #CONNECT <user_id>
+  KEY_SEARCH, // search a user or a room: #SEARCH <name> 
+
+
 
 
   KEY_SEND, // #SEND <content>
   KEY_REPLY, // #REPLY <message_id> <content>
-  KEY_FIND, // #FIND <date>
-  KEY_OUT, // #OUT
+  KEY_FIND, // #FIND <date> find message by date
+  KEY_OUTROOM, // #OUT out chat room
   KEY_EXIT, // #EXIT
 } KeyCode;
  
@@ -28,17 +32,27 @@ typedef enum {
 #define KEY_LOGIN "#LOGIN"
 #define KEY_LOGOUT "#LOGOUT"
 
+// in login success screen
 #define KEY_VIEW "#VIEW"
-
-#define KEY_WSP "#WSP_LIST"
-#define KEY_NEW "#NEW"
+#define KEY_WSP "#LIST_WSP"
 #define KEY_JOIN "#JOIN"
+
+
+// in wsp command
+#define KEY_CONNECT "#CONNECT"
+#define KEY_SEARCH "#SEARCH"
+#define KEY_OUT "#OUT"
+
+// in wsp command for admin
+#define KEY_NEW "#NEW"
 #define KEY_ADD "#ADD"
 #define KEY_KICK "#KICK"
+
+// in chat room command
 #define KEY_SEND "#SEND"
 #define KEY_REPLY "#REPLY"
 #define KEY_FIND "#FIND"
-#define KEY_OUT "#OUT"
+#define KEY_OUTROOM "#OUTROOM"
 #define KEY_EXIT "#EXIT"
 
 #endif
