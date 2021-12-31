@@ -18,6 +18,8 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
     new->num_of_rooms = 0;
     new->num_of_users = 0;
 
+    
+
     // read Each WorkSpace users
     char filename[] = "db/workspace_users_";
     char tmp[2];

@@ -144,8 +144,9 @@ void freeUserData(User *root)
     while (root != NULL)
     {
         tmp = root->next;
-        printf("Delete %s\n", root->name);
+        //printf("Delete %s\n", root->name);
         free(root);
         root = tmp;
     }
+    printf("Free success.\n");
 }

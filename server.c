@@ -22,7 +22,7 @@
 #include "models/keycode.h"
 
 #define MAX_CLIENTS 100
-#define BUFFER_SZ 2048
+#define BUFFER_SZ 512
 
 static _Atomic unsigned int cli_count = 0;
 //static int uid = 10;
@@ -78,7 +78,7 @@ void queue_add(client_t *cli)
 }
 
 /* Remove clients to queue */
-void queue_remove(int uid)
+void queue_remove(int id)
 {
 	pthread_mutex_lock(&clients_mutex);
 
@@ -86,7 +86,7 @@ void queue_remove(int uid)
 	{
 		if (clients[i])
 		{
-			if (clients[i]->info->ID == uid)
+			if (clients[i]->info->ID == id)
 			{
 				clients[i] = NULL;
 				break;
@@ -196,24 +196,7 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
 	free(wsp);
 }
-int createFakeRoom(int a, int b)
-{
-	char s1[3];
-	char s2[3];
-	if (a < b)
-	{
-		sprintf(s1, "%d", a*10);
-		sprintf(s2, "%d", b);
-	}
-	else
-	{
-		sprintf(s1, "%d", b*10);
-		sprintf(s2, "%d", a);
-	}
-	strcat(s1, s2);
-	int c = atoi(s1);
-	return c;
-}
+
 
 void processChatroom(client_t *cli, char buff_out[], int *flag)
 {
@@ -307,38 +290,57 @@ void *handle_client(void *arg)
 				{
 					send_message(MESS_VIEW_WSP, cli);
 				}
-				else if (strcmp(token, KEY_JOIN) == 0)
+				else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
 				{
 					processWorkspace(cli, buff_out, &flag);
 				}
-				else if (strcmp(token, KEY_CONNECT) == 0)
+				else if (strcmp(token, KEY_JOIN) == 0)
+				{
+					send_message(MESS_IN_WSP, cli);
+				}
+				else if (strcmp(token, KEY_CONNECT) == 0 && cli->workspace_id == -1)
+				{
+					send_message(MESS_JOIN_WSP_WARN, cli);
+				}
+				else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
 				{
 					processChatroom(cli, buff_out, &flag);
+				}			
+				else if (strcmp(token, KEY_CONNECT) == 0)
+				{
+					send_message(MESS_IN_ROOM, cli);
+				}
+				else if (strcmp(token, KEY_OUTROOM) == 0 && cli->room_id != -1)
+				{
+					send_message(MESS_OUT_ROOM_SUCCESS, cli);
+					cli->room_id = -1;
 				}
 				else if (strcmp(token, KEY_OUTROOM) == 0)
 				{
+					send_message("You are not in any chatroom.", cli);
+				}
+				else if (strcmp(token, KEY_OUT) == 0 && cli->workspace_id != -1)
+				{
+					send_message(MESS_OUT_WSP_SUCCESS, cli);
+					cli->workspace_id = -1;
 					cli->room_id = -1;
 				}
 				else if (strcmp(token, KEY_OUT) == 0)
 				{
-					cli->workspace_id = -1;
+					send_message("You are not in any workspace.", cli);
 				}
+				
 				else if (cli->workspace_id != -1 && cli->room_id != -1)
 				{
-					printf("Here \n");
+				
 					if (flag == -1)
 					{
 						break;
 					}
-					// char name[32];
-					
-					// strcat(name, "From ");
-					// strcat(name, cli->info->name);
-					// strcat(name, ": ");
-					// strcat(name, buff_out);
-
-					// strcpy(buff_out, name);
-					// printf("Mess: %s\n", buff_out);
+					char tmp[BUFFER_SZ];					
+					sprintf(tmp,"%d ", cli->info->ID);
+					strcat(tmp, buff_out);
+					strcpy(buff_out, tmp);
 					send_message_chat(buff_out, cli);
 				}
 				else

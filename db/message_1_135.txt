@@ -1,0 +1,40 @@
+1
+0
+10:12:2021 9:20:00
+1
+how are you
+2
+0
+10:12:2021 10:20:12
+1
+where the report I told you this morning?
+3
+0
+15:12:2021 8:27:00
+3
+Sorry I'm too busy. Can I send you tomorrow?
+4
+0
+15:12:2021 12:20:12
+1
+Okeyyyyy. Try hard.
+5
+0
+15:12:2021 12:23:12
+1
+And, would u like to have lunch with Mai?
+6
+0
+15:12:2021 12:24:12
+3
+Really. Where a u going?
+7
+0
+15:12:2021 12:26:12
+1
+I know a famous French restaurant near company =))
+8
+0
+15:12:2021 12:30:12
+3
+That sounds good. let's go!

@@ -19,8 +19,6 @@ typedef enum {
   KEY_SEARCH, // search a user or a room: #SEARCH <name> 
 
 
-
-
   KEY_SEND, // #SEND <content>
   KEY_REPLY, // #REPLY <message_id> <content>
   KEY_FIND, // #FIND <date> find message by date
@@ -49,10 +47,13 @@ typedef enum {
 #define KEY_KICK "#KICK"
 
 // in chat room command
-#define KEY_SEND "#SEND"
 #define KEY_REPLY "#REPLY"
+#define KEY_FROM "#FROM"
+#define KEY_TO "#TO"
 #define KEY_FIND "#FIND"
 #define KEY_OUTROOM "#OUTROOM"
 #define KEY_EXIT "#EXIT"
 
+
+#define KEY_HELP "#HELP"
 #endif
