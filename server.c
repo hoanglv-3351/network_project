@@ -233,6 +233,28 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	printf("%s join room %d\n", cli->info->name, cli->room_id);
 	//free(wsp);
 }
+
+void processMessage(client_t *cli, char buff_out[], int parent_id)
+{
+	char filename[32];
+	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+	printf("filename : %s\n", filename);
+	Message *root = readMessData(filename);
+	
+	printf("Read Mess Data done.\n");
+	printf("Mess time: %s\n", getCurrentTime(2));
+	if (root == NULL)
+	{
+		printf("Read mess null.\n");
+		root = createNewMess(parent_id, getCurrentTime(2), cli->info->ID, buff_out);
+	}
+	else
+		root = insertMess(root, parent_id, getCurrentTime(2), cli->info->ID, buff_out);
+	writeMessData(root, cli->workspace_id, cli->room_id);
+	printf("Write Mess data done.\n");
+	//freeMessData(root);
+	//printf("Free Mess data done.\n");
+}
 /* Handle all communication with the client */
 void *handle_client(void *arg)
 {
@@ -333,8 +355,17 @@ void *handle_client(void *arg)
 				{
 					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
 					str_trim_lf(buff_out, strlen(buff_out));
+
+					char *token = strtok(buff_out, " ");
+					int id = atoi(strtok(NULL, " "));
+					char *content = strtok(NULL, "");
+					processMessage(cli, content, id);
+
+					char tmp[BUFFER_SZ];
+					sprintf(tmp, "%s %d %d ", KEY_REPLY, cli->info->ID, id);
+					strcat(tmp, buff_out);
+					send_message_chat(tmp, cli);
 				}
-				
 
 				else if (cli->workspace_id != -1 && cli->room_id != -1)
 				{
@@ -345,24 +376,7 @@ void *handle_client(void *arg)
 					{
 						break;
 					}
-					char filename[32];
-					strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-					printf("filename : %s\n", filename);
-					Message *root = readMessData(filename);
-					printf("Read Mess Data done.\n");
-					printf("Mess time: %s\n", getCurrentTime(2));
-					if (root == NULL)
-					{
-						printf("Read mess null.\n");
-						root = createNewMess(0, getCurrentTime(2), cli->info->ID, buff_out);
-					}
-					else
-						root = insertMess(root, 0, getCurrentTime(2), cli->info->ID, buff_out);
-					writeMessData(root, cli->workspace_id, cli->room_id);
-					printf("Write Mess data done.\n");
-					//freeMessData(root);
-					printf("Free Mess data done.\n");
-
+					processMessage(cli, buff_out, 0);
 
 					char tmp[BUFFER_SZ];
 					sprintf(tmp, "%d ", cli->info->ID);
@@ -395,7 +409,8 @@ void *handle_client(void *arg)
 	/* Delete client from queue and yield thread */
 	close(cli->sockfd);
 	queue_remove(cli->info->ID);
-	free(cli);
+	//free(cli);
+	cli = NULL;
 	cli_count--;
 	pthread_detach(pthread_self());
 
@@ -477,7 +492,7 @@ int main(int argc, char **argv)
 		pthread_create(&tid, NULL, &handle_client, (void *)cli);
 
 		/* Reduce CPU usage */
-		//sleep(1);
+		sleep(1);
 	}
 
 	return EXIT_SUCCESS;
