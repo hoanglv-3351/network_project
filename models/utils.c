@@ -24,8 +24,8 @@ time_t convertStringToTimeT(char time[])
   sscanf(time, "%d/%d/%d-%d:%d:%d", &d, &m, &y, &hh, &mm, &ss);
 
   when.tm_mday = d;
-  when.tm_mon = m - 1;
-  when.tm_year = y - 1900;
+  when.tm_mon = m-1;
+  when.tm_year = y-1900;
   when.tm_hour = hh;
   when.tm_min = mm;
   when.tm_sec = ss;
@@ -63,6 +63,11 @@ char *convertTimeTtoString(time_t converted, int type)
   {
     strftime(time_str, sizeof(time_str), "%d/%m/%Y %R", timeptr);
   }
+  else if (type == 2)
+  {
+    strftime(time_str, sizeof(time_str), "%d/%m/%Y-%T", timeptr);
+  }
+  
   //printf("Current Time : %s\n", time_str);
   return time_str;
 }

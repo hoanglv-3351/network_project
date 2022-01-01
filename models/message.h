@@ -38,7 +38,7 @@ char * createMessFilename(int wsp_id,int room_id);
 
 
 Message * createNewMess( int parent_id,char time[],int send_id,  char content[]);
-void insertMess(Message * root,  int parent_id,char time[],int send_id, char content[]);
+Message * insertMess(Message * root,  int parent_id,char time[],int send_id, char content[]);
 void printAllMess(Message * root);
 void freeMessData(Message * root);
 

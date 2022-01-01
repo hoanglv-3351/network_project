@@ -125,14 +125,16 @@ void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
 
     //printf("(%d)", p->ID);
     blue();
+    printf("ID %d",p->ID);
     printf("(%s) ", timestr);
     if (p->send_id != user_id)
     {
       green();
       User *tmp = searchUserByID(u_root, p->send_id);
       printf("%s: ", tmp->name);
-      reset();
+      
     }
+    reset();
     printf("%s\n", p->content);
     p = p->next;
   }

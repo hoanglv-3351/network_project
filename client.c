@@ -177,14 +177,14 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-		//writeMessData(root, cli->workspace_id, cli->room_id);
+		writeMessData(root, cli->workspace_id, cli->room_id);
 		printf("%s", message);
 		ScreenInWSP(cli->workspace_id);
 		cli->room_id = -1;
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
 	{
-		//writeMessData(root, cli->workspace_id, cli->room_id);
+		
 		printf("%s", message);
 		ScreenLoginSuccess();
 		cli->workspace_id = -1;
@@ -204,7 +204,7 @@ void process_message(char message[])
 		User *user = searchUserByID(u_root, send_id);
 		
 		DisplayMessage(root, token, user->name);
-		insertMess(root, 0, getCurrentTime(0), send_id, token );
+		root = insertMess(root, 0, getCurrentTime(0), send_id, token );
 	}
 
 	else
@@ -303,6 +303,7 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
+	freeMessData(root);
 
 	return EXIT_SUCCESS;
 }
