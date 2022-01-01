@@ -9,6 +9,7 @@
 Message *createNewMess(int parent_id, char time[], int send_id,  char content[])
 {
     Message *new = (Message *)malloc(sizeof(Message));
+    new->ID = 1;
     new->parent_id = parent_id;
     new->send_id = send_id;
     new->datetime = convertStringToTimeT(time);
@@ -52,6 +53,7 @@ char *createMessFilename(int wsp_id, int room_id)
 }
 Message *readMessData(char filename[])
 {
+    
     Message *root;
     FILE *f;
     int ID;
@@ -62,11 +64,12 @@ Message *readMessData(char filename[])
     //strcpy(filename, "db/users.txt")
     if (!(f = fopen(filename, "r")))
     {
+        printf("-1\n");
         printf("The two of you have connected and can start talking to each other.\n");
+        return NULL;
     }
     else
     {
-
         //int number_of_messes = 0;
         int check = 1;
         //fscanf(f, "%d", &number_of_messes);
@@ -75,27 +78,26 @@ Message *readMessData(char filename[])
 
         while (!feof(f))
         {
+            //printf("2\n");
             
             fscanf(f, "\n%d\n%d\n%s\n%d\n", &ID, &parent_id, time, &send_id);
             fscanf(f, "%[^\n]", content);
-            if(feof(f))
-            break;
+            if (feof(f))
+                break;
 
             //printf("%d\n%d\n%s\n%d\n%d\n%s\n", ID, parent_id, time, send_id,  content);
             if (check == 1)
             {
+                //printf("3\n");
                 root = createNewMess(parent_id, time, send_id, content);
-                root->ID = 1;
                 check = 0;
             }
             else
             {
+                //printf("4\n");
                 root = insertMess(root, parent_id, time, send_id,  content);
             }
-            if (feof(f))
-                break;
             //printAllMess(root);
-
         }
     }
     fclose(f);
@@ -113,22 +115,34 @@ void printAllMess(Message *root)
 }
 void freeMessData(Message *root)
 {
-    /* deref head_ref to get the real head */
-    Message *tmp;
-    while (root != NULL)
-    {
-        tmp = root->next;
-        //printf("Delete mess id=%d\n", root->ID);
-        free(root);
-        root = tmp;
-    }
+    
+    // Message *tmp;
+    // while (root != NULL)
+    // {
+    //     tmp = root;
+    //     root = root->next;
+    //     //printf("Delete mess id=%d\n", root->ID);
+    //     free(tmp);
+    // }
+    Message * current = root;
+    Message * next;
+ 
+   while (current != NULL)
+   {
+       next = current->next;
+       free(current);
+       current = next;
+   }
+   root = NULL;
+    
 }
+
 
 void writeMessData(Message *root, int wsp_id, int room_id)
 {
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
-    printf("Write file %s", filename);
+    printf("Write file %s\n", filename);
 
     FILE *f;
     if (!(f = fopen(filename, "w")))

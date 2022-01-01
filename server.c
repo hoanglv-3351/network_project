@@ -18,6 +18,7 @@
 #include "models/user.h"
 #include "models/utils.h"
 #include "models/workspace.h"
+#include "models/message.h"
 #include "models/signal.h"
 #include "models/keycode.h"
 
@@ -168,7 +169,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 	sprintf(buff_out, "%s has joined\n", username);
 	printf("%s", buff_out);
 
-	freeUserData(root);
+	//freeUserData(root);
 }
 
 void processWorkspace(client_t *cli, char buff_out[], int *flag)
@@ -194,9 +195,8 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 
 	cli->workspace_id = wsp_id;
 	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
-	free(wsp);
+	//free(wsp);
 }
-
 
 void processChatroom(client_t *cli, char buff_out[], int *flag)
 {
@@ -231,7 +231,7 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	else //connect to a room contains many users
 		cli->room_id = id;
 	printf("%s join room %d\n", cli->info->name, cli->room_id);
-	free(wsp);
+	//free(wsp);
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -305,7 +305,7 @@ void *handle_client(void *arg)
 				else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
 				{
 					processChatroom(cli, buff_out, &flag);
-				}			
+				}
 				else if (strcmp(token, KEY_CONNECT) == 0)
 				{
 					send_message(MESS_IN_ROOM, cli);
@@ -329,19 +329,45 @@ void *handle_client(void *arg)
 				{
 					send_message("You are not in any workspace.", cli);
 				}
+				else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
+					str_trim_lf(buff_out, strlen(buff_out));
+				}
 				
+
 				else if (cli->workspace_id != -1 && cli->room_id != -1)
 				{
-				
+					printf("Mess %s -> %s\n", cli->info->name, buff_out);
+					str_trim_lf(buff_out, strlen(buff_out));
+
 					if (flag == -1)
 					{
 						break;
 					}
-					char tmp[BUFFER_SZ];					
-					sprintf(tmp,"%d ", cli->info->ID);
+					char filename[32];
+					strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+					printf("filename : %s\n", filename);
+					Message *root = readMessData(filename);
+					printf("Read Mess Data done.\n");
+					printf("Mess time: %s\n", getCurrentTime(2));
+					if (root == NULL)
+					{
+						printf("Read mess null.\n");
+						root = createNewMess(0, getCurrentTime(2), cli->info->ID, buff_out);
+					}
+					else
+						root = insertMess(root, 0, getCurrentTime(2), cli->info->ID, buff_out);
+					writeMessData(root, cli->workspace_id, cli->room_id);
+					printf("Write Mess data done.\n");
+					//freeMessData(root);
+					printf("Free Mess data done.\n");
+
+
+					char tmp[BUFFER_SZ];
+					sprintf(tmp, "%d ", cli->info->ID);
 					strcat(tmp, buff_out);
-					strcpy(buff_out, tmp);
-					send_message_chat(buff_out, cli);
+					send_message_chat(tmp, cli);
 				}
 				else
 				{
@@ -451,7 +477,7 @@ int main(int argc, char **argv)
 		pthread_create(&tid, NULL, &handle_client, (void *)cli);
 
 		/* Reduce CPU usage */
-		sleep(1);
+		//sleep(1);
 	}
 
 	return EXIT_SUCCESS;

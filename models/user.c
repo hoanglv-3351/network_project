@@ -137,16 +137,19 @@ char *verifyAccount(User *root, char *name, char *password, int *flag)
     return response;
 }
 
+
+
 void freeUserData(User *root)
 {
-    /* deref head_ref to get the real head */
-    User *tmp;
-    while (root != NULL)
-    {
-        tmp = root->next;
-        //printf("Delete %s\n", root->name);
-        free(root);
-        root = tmp;
-    }
-    printf("Free success.\n");
+    User * current = root;
+    User * next;
+ 
+   while (current != NULL)
+   {
+       next = current->next;
+       free(current);
+       current = next;
+   }
+   root = NULL;
+    
 }

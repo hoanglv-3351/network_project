@@ -63,7 +63,7 @@ char *convertTimeTtoString(time_t converted, int type)
   {
     strftime(time_str, sizeof(time_str), "%d/%m/%Y %R", timeptr);
   }
-  else if (type == 2)
+  else if (type == 2) //infile
   {
     strftime(time_str, sizeof(time_str), "%d/%m/%Y-%T", timeptr);
   }

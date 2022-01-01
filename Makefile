@@ -7,8 +7,8 @@ all: server client
 client: client.o utils.o user.o workspace.o message.o screen.o
 	${CC} client.o utils.o user.o workspace.o message.o screen.o -o client -pthread -lm
 
-server: server.o utils.o user.o workspace.o room.o
-	${CC} server.o utils.o user.o workspace.o room.o -o server -pthread -lm
+server: server.o utils.o user.o workspace.o room.o message.o
+	${CC} server.o utils.o user.o workspace.o room.o message.o -o server -pthread -lm
 
 
 server.o: server.c

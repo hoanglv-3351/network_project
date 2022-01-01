@@ -231,15 +231,16 @@ void join(WorkSpace workspace)
 //     return 0;
 // }
 
-void freeWorkspaceData(User *root)
+void freeWorkspaceData(WorkSpace *root)
 {
-    /* deref head_ref to get the real head */
-    User *tmp;
-    while (root != NULL)
-    {
-        tmp = root->next;
-        printf("Delete %s\n", root->name);
-        free(root);
-        root = tmp;
-    }
+    WorkSpace * current = root;
+    WorkSpace * next;
+ 
+   while (current != NULL)
+   {
+       next = current->next;
+       free(current);
+       current = next;
+   }
+   root = NULL;
 }

@@ -140,7 +140,7 @@ void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
   }
 }
 
-void DisplayMessage(Message *root, char message[], char name[])
+void DisplayMessage(char message[], char name[])
 {
     blue();
 		printf("(%s)", getCurrentTime(1));

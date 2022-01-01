@@ -35,7 +35,7 @@ char username[10];
 int wsp_id = 0;
 int room_id = 0;
 
-Message *root = NULL;
+
 
 void str_overwrite_stdout()
 {
@@ -172,12 +172,13 @@ void process_message(char message[])
 
 		char filename[32];
 		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		root = readMessData(filename);
+		Message * root = readMessData(filename);
 		ChatScreen(root, cli->info->ID, cli->workspace_id, cli->room_id);
+		//freeMessData(root);
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-		writeMessData(root, cli->workspace_id, cli->room_id);
+		
 		printf("%s", message);
 		ScreenInWSP(cli->workspace_id);
 		cli->room_id = -1;
@@ -203,8 +204,8 @@ void process_message(char message[])
 		User *u_root = readUserData("db/users.txt");
 		User *user = searchUserByID(u_root, send_id);
 		
-		DisplayMessage(root, token, user->name);
-		root = insertMess(root, 0, getCurrentTime(0), send_id, token );
+		DisplayMessage(token, user->name);
+		
 	}
 
 	else
@@ -303,7 +304,7 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
-	freeMessData(root);
+	
 
 	return EXIT_SUCCESS;
 }
