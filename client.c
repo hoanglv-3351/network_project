@@ -196,6 +196,18 @@ void process_message(char message[])
 	{
 		ScreenRoomHelp();
 	}
+	else if (strcmp(message, KEY_REPLY) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
+	{
+		char *token = strtok(message, " ");
+		int send_id = atoi(strtok(NULL, " "));
+		int reply_id = atoi(strtok(NULL, " "));
+		token = strtok(NULL, "");
+		User *u_root = readUserData("db/users.txt");
+		User *user = searchUserByID(u_root, send_id);
+		
+		DisplayReplyMessage(token, user->name, reply_id);
+	}
+	
 	else if (cli->room_id != -1 && cli->workspace_id != -1)
 	{
 		char *token = strtok(message, " ");

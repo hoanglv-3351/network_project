@@ -27,6 +27,7 @@ void ScreenInWSP();
 
 void ChatScreen(Message *root, int user_id, int wsp_id, int room_id);
 void DisplayMessage(char message[], char name[]);
+void DisplayReplyMessage(char message[], char name[], int reply_id);
 void ScreenRoomHelp();
 
 #endif

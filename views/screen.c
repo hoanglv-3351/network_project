@@ -116,23 +116,24 @@ void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
   green();
   printf("\n---- CHAT ROOM -----\n");
   reset();
-  
+
   Message *p = root;
   while (p != NULL)
   {
     char timestr[64];
     strcpy(timestr, convertTimeTtoString(p->datetime, 1));
 
-    //printf("(%d)", p->ID);
     blue();
-    printf("ID %d",p->ID);
+    printf("ID %d", p->ID);
     printf("(%s) ", timestr);
     if (p->send_id != user_id)
     {
       green();
       User *tmp = searchUserByID(u_root, p->send_id);
-      printf("%s: ", tmp->name);
-      
+      if (p->parent_id == 0)
+        printf("%s: ", tmp->name);
+      else
+        printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
     }
     reset();
     printf("%s\n", p->content);
@@ -142,12 +143,21 @@ void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
 
 void DisplayMessage(char message[], char name[])
 {
-    blue();
-		printf("(%s)", getCurrentTime(1));
-    green();
-    printf("%s: ",name);
-    reset();
-		printf("%s", message);
+  blue();
+  printf("(%s)", getCurrentTime(1));
+  green();
+  printf("%s: ", name);
+  reset();
+  printf("%s", message);
+}
+void DisplayReplyMessage(char message[], char name[], int reply_id)
+{
+  blue();
+  printf("(%s)", getCurrentTime(1));
+  green();
+  printf("%s reply mess ID %d: ", name, reply_id);
+  reset();
+  printf("%s", message);
 }
 
 void ScreenRoomHelp()
@@ -161,4 +171,3 @@ void ScreenRoomHelp()
   printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
   printf(" 4. Enter %s to lelf the room.\n", KEY_OUTROOM);
 }
-
