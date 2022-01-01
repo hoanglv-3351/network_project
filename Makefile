@@ -4,11 +4,11 @@ LIBS =  -lm
 
 all: server client
 
-client: client.o screen.o user.o workspace.o
-	${CC} client.o screen.o user.o workspace.o -o client -pthread
+client: client.o utils.o user.o workspace.o message.o screen.o
+	${CC} client.o utils.o user.o workspace.o message.o screen.o -o client -pthread -lm
 
-server: server.o utils.o user.o workspace.o room.o
-	${CC} server.o utils.o user.o workspace.o room.o -o server -pthread
+server: server.o utils.o user.o workspace.o room.o message.o
+	${CC} server.o utils.o user.o workspace.o room.o message.o -o server -pthread -lm
 
 
 server.o: server.c
@@ -23,6 +23,8 @@ room.o: models/room.c
 	${CC} ${CFLAGS} models/room.c
 workspace.o: models/workspace.c
 	${CC} ${CFLAGS} models/workspace.c
+message.o: models/message.c
+	${CC} ${CFLAGS} models/message.c
 
 screen.o: views/screen.c
 	${CC} ${CFLAGS} views/screen.c

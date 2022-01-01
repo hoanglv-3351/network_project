@@ -9,9 +9,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define BUFFER_SZ 2048
+#define BUFFER_SZ 512
 
 #include "views/screen.h"
+#include "models/utils.h"
 #include "models/signal.h"
 #include "models/user.h"
 #include "models/workspace.h"
@@ -31,10 +32,15 @@ typedef struct
 client_t *cli;
 
 char username[10];
+int wsp_id = 0;
+int room_id = 0;
+
+
+
 void str_overwrite_stdout()
 {
 	green();
-	printf("%s", ">");
+	printf("\n%s", ">");
 	reset();
 	fflush(stdout);
 }
@@ -86,22 +92,14 @@ void send_msg_handler()
 				const char s[2] = " ";
 				char *token = strtok(buffer, s);
 				token = strtok(NULL, s);
-				cli->workspace_id = atoi(token);
+				wsp_id = atoi(token);
 			}
 			if (strstr(buffer, KEY_CONNECT))
 			{
 				const char s[2] = " ";
 				char *token = strtok(buffer, s);
 				token = strtok(NULL, s);
-				cli->room_id = atoi(token);
-			}
-			if (strstr(buffer, KEY_OUT))
-			{
-				cli->workspace_id = -1;
-			}
-			if (strstr(buffer, KEY_OUTROOM))
-			{
-				cli->room_id = -1;
+				room_id = atoi(token);
 			}
 		}
 		bzero(buffer, BUFFER_SZ);
@@ -159,13 +157,57 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
+		cli->workspace_id = wsp_id;
 		ScreenInWSP(cli->workspace_id);
 	}
-	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS))
+	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
 		printf("%s", message);
+		if (room_id % 2 == 1) // connect only a user
+		{
+			cli->room_id = createFakeRoom(cli->info->ID, room_id);
+		}
+		else //connect to a room contains many users
+			cli->room_id = room_id;
+
+		char filename[32];
+		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+		Message * root = readMessData(filename);
+		ChatScreen(root, cli->info->ID, cli->workspace_id, cli->room_id);
+		//freeMessData(root);
 	}
-	
+	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
+	{
+		
+		printf("%s", message);
+		ScreenInWSP(cli->workspace_id);
+		cli->room_id = -1;
+	}
+	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
+	{
+		
+		printf("%s", message);
+		ScreenLoginSuccess();
+		cli->workspace_id = -1;
+		cli->room_id = -1;
+		
+	}
+	else if (strcmp(message, KEY_HELP) == 0)
+	{
+		ScreenRoomHelp();
+	}
+	else if (cli->room_id != -1 && cli->workspace_id != -1)
+	{
+		char *token = strtok(message, " ");
+		int send_id = atoi(token);
+		token = strtok(NULL, "");
+		User *u_root = readUserData("db/users.txt");
+		User *user = searchUserByID(u_root, send_id);
+		
+		DisplayMessage(token, user->name);
+		
+	}
+
 	else
 	{
 		printf("%s", message);
@@ -196,21 +238,20 @@ void recv_msg_handler()
 
 int main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
-		printf("Usage: %s <port>\n", argv[0]);
+		printf("Usage: %s <ip address> <port>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	char *ip = "127.0.0.1";
-	int port = atoi(argv[1]);
+	char ip[16];
+	strcpy(ip, argv[1]);
+	int port = atoi(argv[2]);
 	//char buffer[BUFFER_SZ];
 
 	signal(SIGINT, catch_ctrl_c_and_exit);
 
-	printf("=== WELCOME TO THE CHATROOM ===\n");
-	printf("Please LOGIN. Command #LOGIN <username> <password>.\n");
-	printf("Enter: ");
+	ScreenLogin();
 	//fgets(buffer, BUFFER_SZ, stdin);
 	//str_trim_lf(buffer, strlen(buffer));
 
@@ -263,6 +304,7 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
+	
 
 	return EXIT_SUCCESS;
 }

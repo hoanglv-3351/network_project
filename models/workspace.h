@@ -35,7 +35,7 @@ WorkSpace * createNewWSP(int id, int host_id, char  wsp_name[]);
 void insertWSP(WorkSpace *root, int ID, int host_id, char name[]);
 WorkSpace *searchWSPByID(WorkSpace * root, int ID);
 void printAllWPS(WorkSpace *root);
-void freeWorkspaceData(User *root);
+void freeWorkspaceData(WorkSpace *root);
 
 
 // input is a User, find all workspace user belong to

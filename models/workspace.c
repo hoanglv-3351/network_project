@@ -18,6 +18,8 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
     new->num_of_rooms = 0;
     new->num_of_users = 0;
 
+    
+
     // read Each WorkSpace users
     char filename[] = "db/workspace_users_";
     char tmp[2];
@@ -229,15 +231,16 @@ void join(WorkSpace workspace)
 //     return 0;
 // }
 
-void freeWorkspaceData(User *root)
+void freeWorkspaceData(WorkSpace *root)
 {
-    /* deref head_ref to get the real head */
-    User *tmp;
-    while (root != NULL)
-    {
-        tmp = root->next;
-        printf("Delete %s\n", root->name);
-        free(root);
-        root = tmp;
-    }
+    WorkSpace * current = root;
+    WorkSpace * next;
+ 
+   while (current != NULL)
+   {
+       next = current->next;
+       free(current);
+       current = next;
+   }
+   root = NULL;
 }
