@@ -3,6 +3,7 @@
 
 #include<stdio.h>
 
+
 #define MAX_LENGTH 32
 
 //int number_of_users = 0;    
@@ -19,7 +20,7 @@ User * readUserData(char filename[]);
 
 
 User * createNewUser(int ID, char username[], char password[]);
-void insertUser(User * root, int ID, char username[], char password[]);
+void insertUser(User * root,  char username[], char password[]);
 void printAllUser(User * root);
 void freeUserData(User * root);
 

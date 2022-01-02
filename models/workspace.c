@@ -21,16 +21,16 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
     
 
     // read Each WorkSpace users
-    char filename[] = "db/workspace_users_";
+    char filename[32] = "db/workspace_users_";
     char tmp[2];
     sprintf(tmp, "%d", id);
     strcat(filename, tmp);
     strcat(filename, ".txt");
-
     FILE *f;
     if (!(f = fopen(filename, "r")))
     {
-        printf("\nCreate Workspace Database failed! File Users not found.\n");
+        //printf("\nCreate Workspace Database failed! File Users not found.\n");
+        
     }
     else
     {
@@ -38,7 +38,34 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
         {
             fscanf(f, "%d", &new->user_id[new->num_of_users++]);
         }
+        fclose(f);
     }
+
+    // read Each WorkSpace room
+    strcpy(filename,"db/workspace_rooms_");
+    memset(tmp, 0, sizeof(tmp));
+    sprintf(tmp, "%d", id);
+    strcat(filename, tmp);
+    strcat(filename, ".txt");
+    printf("File room %s\n", filename);
+    if (!(f = fopen(filename, "r")))
+    {
+        //printf("\nCreate Workspace Database failed! File Rooms not found.\n");
+        
+    }
+    else
+    {
+        while (!feof(f))
+        {
+            fscanf(f, "%d\n", &new->room_id[new->num_of_rooms]);
+            fscanf(f, "%[^\n]\n", new->room_name[new->num_of_rooms]);
+            new->num_of_rooms += 1;
+            if (feof(f))
+            break;
+        }
+        fclose(f);
+    }
+    
 
     return new;
 }
@@ -167,7 +194,7 @@ int valueInArray(int val, int *arr)
 }
 
 // input is a User, find all workspace user belong to
-int *findWSPForUser(WorkSpace *root, int user_id, int *count)
+int * findWSPForUser(WorkSpace *root, int user_id, int *count)
 {
     WorkSpace *p = root;
     static int list_wps[10];

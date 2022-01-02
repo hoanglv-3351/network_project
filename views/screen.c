@@ -88,6 +88,10 @@ void ScreenInWSP(int wsp_id)
   printf(" ---- WELCOME TO %s ---- \n", wsp->name);
   reset();
   printf(" WSP rooms: \n");
+  for (int i = 0; i < wsp->num_of_rooms; i++)
+  {
+    printf(" (ID %d) %s\n", wsp->room_id[i], wsp->room_name[i]);
+  }
   printf(" WSP users: \n");
   for (int i = 0; i < wsp->num_of_users; i++)
   {
@@ -162,10 +166,10 @@ void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int i
   Message *p = root;
   while (p != NULL)
   {
-    printf("113\n");
+    
     if (p->ID == ids[i])
     {
-      printf("114\n");
+      
       i++;
       char timestr[64];
     strcpy(timestr, convertTimeTtoString(p->datetime, 1));

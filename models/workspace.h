@@ -4,6 +4,7 @@
 
 #define MAX_ROOM 10
 #define MAX_USERS_IN_WSP 10
+#define MAX_ROOMS_IN_WSP 5
 
 #include<stdio.h>
 
@@ -19,9 +20,10 @@ typedef struct WorkSpace{
     
     int host_id;
     int user_id[MAX_USERS_IN_WSP];
-    //Room *rooms[MAX_ROOM];
-    int num_of_users;
+    int room_id[MAX_ROOMS_IN_WSP];
+    char room_name[MAX_ROOMS_IN_WSP][32];
     int num_of_rooms;
+    int num_of_users;
     struct WorkSpace *next;
 } WorkSpace;
 

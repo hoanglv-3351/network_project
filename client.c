@@ -124,16 +124,18 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
+		
 		WorkSpace *root = readWorkspaceData("db/workspaces.txt");
 		//printAllWSP(root);
 
 		int count = 0;
+		
 		int *list_wps = findWSPForUser(root, cli->info->ID, &count);
-
+		printf("%d\n", count);
 		if (count == 0)
 		{
 			cyan();
-			printf("You don't have any workspaces.\nUse %s to create your workspace.\n", KEY_NEW);
+			printf("You don't have any workspaces.\nUse %s <workspace_name> to create your workspace.\n", KEY_NEW);
 			reset();
 		}
 		else
@@ -218,7 +220,7 @@ void process_message(char message[])
 		{
 			ids[i-1] = atoi(newString[i]);
 		}
-		printf("112\n");
+		
 		char filename[32];
 		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
 		Message * root = readMessData(filename);

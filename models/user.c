@@ -5,7 +5,7 @@
 
 #include "signal.h"
 
-User *createNewUser(int ID, char username[], char password[])
+User *createNewUser( int ID, char username[], char password[])
 {
     User *new = (User *)malloc(sizeof(User));
     new->ID = ID;
@@ -14,9 +14,9 @@ User *createNewUser(int ID, char username[], char password[])
     return new;
 }
 
-void insertUser(User *root, int ID, char username[], char password[])
+void insertUser(User *root, char username[], char password[])
 {
-    User *new = createNewUser(ID, username, password);
+    User *new = createNewUser( 0 , username, password);
     if (root == NULL)
     {
         new->next = root;
@@ -28,6 +28,7 @@ void insertUser(User *root, int ID, char username[], char password[])
         //tro con tro toi cuoi danh sach lien ket
         while (p->next != NULL)
             p = p->next;
+        new->ID = p->ID + 2;
         p->next = new;
     }
 }
@@ -48,22 +49,23 @@ User *readUserData(char filename[])
     }
     else
     {
-        int number_of_users = 0;
+        // int number_of_users = 0;
+        
+        // fscanf(f, "%d\n", &number_of_users);
+        // if (number_of_users == 0)
+        //     return NULL;
         int check = 1;
-        fscanf(f, "%d\n", &number_of_users);
-        if (number_of_users == 0)
-            return NULL;
         while (!feof(f))
         {
             fscanf(f, "%d\n%s\n%s\n", &ID, name, password);
 
             if (check == 1)
             {
-                root = createNewUser(ID, name, password);
+                root = createNewUser(1 , name, password);
                 check = 0;
             }
             else
-                insertUser(root, ID, name, password);
+                insertUser(root, name, password);
         }
     }
     fclose(f);
