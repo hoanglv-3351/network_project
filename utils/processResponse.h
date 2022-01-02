@@ -12,4 +12,5 @@
 
 char * processResponseForViewWSP(User * user);
 char * processResponseForJoinWSP(User *user, int wsp_id);
+char * processResponseForJoinRoom(User *user, int wsp_id, int room_id);
 #endif

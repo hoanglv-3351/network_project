@@ -142,17 +142,16 @@ void process_message(char message[])
 		}
 		else //connect to a room contains many users
 			cli->room_id = room_id;
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenChat(message);
 
-		char filename[32];
-		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		Message *root = readMessData(filename);
-		ScreenChat(root, cli->info->ID, cli->workspace_id, cli->room_id);
-		//freeMessData(root);
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-
 		printf("%s", message);
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenInWSP(message);
 		cli->room_id = -1;
 	}

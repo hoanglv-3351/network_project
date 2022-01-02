@@ -26,7 +26,7 @@ void ScreenLoginSuccess();
 void ScreenViewListWSP(char message[]);
 void ScreenInWSP(char message[]);
 
-void ScreenChat(Message *root, int user_id, int wsp_id, int room_id);
+void ScreenChat(char message[]);
 
 void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int ids[]);
 void DisplayMessage(char message[], char name[]);

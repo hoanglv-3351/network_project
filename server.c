@@ -247,6 +247,9 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	else //connect to a room contains many users
 		cli->room_id = id;
 	printf("%s join room %d\n", cli->info->name, cli->room_id);
+	char information[BUFFER_SZ];
+	strcpy(information, processResponseForJoinRoom(cli->info, cli->workspace_id, cli->room_id));
+	send_message(information, cli);
 	
 }
 
@@ -369,25 +372,24 @@ void *handle_client(void *arg)
 				}
 				else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
 				{
-					processWorkspace(cli, buff_out, &flag);
-					
+					processWorkspace(cli, buff_out, &flag);	
 				}
 				else if (strcmp(token, KEY_JOIN) == 0)
 				{
 					send_message(MESS_IN_WSP, cli);
 				}
-				// else if (strcmp(token, KEY_CONNECT) == 0 && cli->workspace_id == -1)
-				// {
-				// 	send_message(MESS_JOIN_WSP_WARN, cli);
-				// }
-				// else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
-				// {
-				// 	processChatroom(cli, buff_out, &flag);
-				// }
-				// else if (strcmp(token, KEY_CONNECT) == 0)
-				// {
-				// 	send_message(MESS_IN_ROOM, cli);
-				// }
+				else if (strcmp(token, KEY_CONNECT) == 0 && cli->workspace_id == -1)
+				{
+					send_message(MESS_JOIN_WSP_WARN, cli);
+				}
+				else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
+				{
+					processChatroom(cli, buff_out, &flag);
+				}
+				else if (strcmp(token, KEY_CONNECT) == 0)
+				{
+					send_message(MESS_IN_ROOM, cli);
+				}
 				else if (strcmp(token, KEY_OUTROOM) == 0 && cli->room_id != -1)
 				{
 					send_message(MESS_OUT_ROOM_SUCCESS, cli);
@@ -396,20 +398,20 @@ void *handle_client(void *arg)
 					send_message(information, cli);
 					cli->room_id = -1;
 				}
-				// else if (strcmp(token, KEY_OUTROOM) == 0)
-				// {
-				// 	send_message("You are not in any chatroom.", cli);
-				// }
-				// else if (strcmp(token, KEY_OUT) == 0 && cli->workspace_id != -1)
-				// {
-				// 	send_message(MESS_OUT_WSP_SUCCESS, cli);
-				// 	cli->workspace_id = -1;
-				// 	cli->room_id = -1;
-				// }
-				// else if (strcmp(token, KEY_OUT) == 0)
-				// {
-				// 	send_message("You are not in any workspace.", cli);
-				// }
+				else if (strcmp(token, KEY_OUTROOM) == 0)
+				{
+					send_message("You are not in any chatroom.", cli);
+				}
+				else if (strcmp(token, KEY_OUT) == 0 && cli->workspace_id != -1)
+				{
+					send_message(MESS_OUT_WSP_SUCCESS, cli);
+					cli->workspace_id = -1;
+					cli->room_id = -1;
+				}
+				else if (strcmp(token, KEY_OUT) == 0)
+				{
+					send_message("You are not in any workspace.", cli);
+				}
 				// else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
 				// {
 				// 	printf("Mess reply %s -> %s\n", cli->info->name, buff_out);

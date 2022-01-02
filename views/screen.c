@@ -76,7 +76,7 @@ void ScreenLoginSuccess()
 void ScreenViewListWSP(char message[])
 {
   int num_line = 0;
-  char newLine[5][256];
+  char newLine[5][128];
   splitStringByLine(message, newLine, &num_line);
   if (newLine[0] == 0)
   {
@@ -114,7 +114,7 @@ void ScreenInWSP(char message[])
   //system("clear");
 
   int num_line = 0;
-  char newLine[20][256];
+  char newLine[20][128];
   splitStringByLine(message, newLine, &num_line);
   // for(int i =0; i< num_line; i++)
   // {
@@ -149,7 +149,7 @@ void ScreenInWSP(char message[])
   {
     if (strlen(newString[i]) == 0)
       break;
-    printf(" (ID %d) %s \n", atoi(newString[i]), newString[i+1]);
+    printf(" (ID %d) %s \n", atoi(newString[i]), newString[i + 1]);
   }
 
   yellow();
@@ -163,41 +163,40 @@ void ScreenInWSP(char message[])
   reset();
 }
 
-void ScreenChat(Message *root, int user_id, int wsp_id, int room_id)
+void ScreenChat(char message[])
 {
-
-  User *u_root = readUserData("db/users.txt");
 
   //system("clear");
   green();
   printf("\n---- CHAT ROOM -----\n");
   reset();
 
-  Message *p = root;
-  while (p != NULL)
+  int num_line = 0;
+  char newLine[51][128];
+  splitStringByLine(message, newLine, &num_line);
+  for (int i = 0; i < num_line - 5; i = i + 5)
   {
-    char timestr[64];
-    strcpy(timestr, convertTimeTtoString(p->datetime, 1));
+    printf("%s\n", newLine[i]);
 
     blue();
-    printf("ID %d", p->ID);
-    printf("(%s) ", timestr);
-    if (p->send_id != user_id)
+    printf("ID %d", atoi(newLine[i]));
+    printf("(%s) ", newLine[i + 1]);
+    reset();
+    if (strcmp(newLine[i + 2], "0") != 0)
     {
       green();
-      User *tmp = searchUserByID(u_root, p->send_id);
-      if (p->parent_id == 0)
-        printf("%s: ", tmp->name);
-      else
-      {
-        purple();
-        printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
-        reset();
-      }
+      printf("From %s: ", newLine[i+2]);
+      reset();
     }
-    reset();
-    printf("%s\n", p->content);
-    p = p->next;
+
+    if (strcmp(newLine[i + 3], "0") != 0)
+    {
+      green();
+      printf("(Reply %s)", newLine[i+3]);
+      reset();
+    }
+    printf("%s\n", newLine[i+4]);
+
   }
   printf("(You can enter %s for some instruction.)\n", KEY_HELP);
 }

@@ -169,7 +169,7 @@ char ** splitString(char str[], char newString[][16], int * num_word)
     
 }
 
-char ** splitStringByLine(char str[], char newString[][256], int * num_word)
+char ** splitStringByLine(char str[], char newString[][128], int * num_word)
 {
   int j=0; 
   int ctr =0;
