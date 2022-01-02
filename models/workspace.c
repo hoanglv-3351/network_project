@@ -65,7 +65,7 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
         }
         fclose(f);
     }
-    
+    printf("Read data WSP %s have %d room, %d user\n", new->name, new->num_of_rooms, new->num_of_users );
 
     return new;
 }

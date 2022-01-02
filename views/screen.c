@@ -73,33 +73,85 @@ void ScreenLoginSuccess()
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();
 }
-void ScreenProfile(User *id)
+void ScreenViewListWSP(char message[])
 {
+  int num_line = 0;
+  char newLine[5][256];
+  splitStringByLine(message, newLine, &num_line);
+  if (newLine[0] == 0)
+  {
+    cyan();
+    printf("You don't have any workspaces.\nUse %s <workspace_name> to create your workspace.\n", KEY_NEW);
+    reset();
+  }
+  else
+  {
+    green();
+    printf(" --- YOUR WORKSPACES --- \n");
+    reset();
+    for (int i = 1; i < num_line; i++)
+    {
+      if (strlen(newLine[i]) <= 1)
+        break;
+      int num_word = 0;
+      char newString[num_line][16];
+      splitString(newLine[i], newString, &num_word);
+      printf(" (ID %d) %s ", atoi(newString[0]), newString[1]);
+      if (atoi(newString[2]) == 1)
+      {
+        green();
+        printf(" (admin) ");
+        reset();
+      }
+      printf("\n");
+    }
+  }
 }
 
 // after join a chatrooom
-void ScreenInWSP(int wsp_id)
+void ScreenInWSP(char message[])
 {
   //system("clear");
-  WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
-  User *root = readUserData("db/users.txt");
+
+  int num_line = 0;
+  char newLine[20][256];
+  splitStringByLine(message, newLine, &num_line);
+  // for(int i =0; i< num_line; i++)
+  // {
+  //   printf("%s\n", newLine[i]);
+  // }
 
   green();
-  printf(" ---- WELCOME TO %s ---- \n", wsp->name);
+  printf(" ---- WELCOME TO %s ---- \n", newLine[0]);
   reset();
-  printf(" WSP rooms: \n");
-  for (int i = 0; i < wsp->num_of_rooms; i++)
+  if (atoi(newLine[1]) == 0)
   {
-    printf(" (ID %d) %s\n", wsp->room_id[i], wsp->room_name[i]);
+    cyan();
+    printf("This workspace don't have any rooms.\n");
+    reset();
   }
-  printf(" WSP users: \n");
-  for (int i = 0; i < wsp->num_of_users; i++)
+  else
   {
-    User *p = searchUserByID(root, wsp->user_id[i]);
-    printf(" (ID %d) %s\n", p->ID, p->name);
+    printf("WSP rooms: \n");
+    for (int i = 0; i < atoi(newLine[1]); i++)
+    {
+      int id = atoi(strtok(newLine[i + 2], " "));
+      char *name = strtok(NULL, "");
+      printf(" (ID %d) %s \n", id, name);
+    }
   }
 
-  yellow();
+  printf("WSP users: \n");
+  int num_word = 0;
+  char newString[num_line][16];
+  splitString(newLine[3 + atoi(newLine[1])], newString, &num_word);
+  for (int i = 0; i < num_word - 1; i = i + 2)
+  {
+    if (strlen(newString[i]) == 0)
+      break;
+    printf(" (ID %d) %s \n", atoi(newString[i]), newString[i+1]);
+  }
+
   yellow();
   printf("\n (Here is some instructions for you)\n");
   reset();
@@ -142,7 +194,6 @@ void ScreenChat(Message *root, int user_id, int wsp_id, int room_id)
         printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
         reset();
       }
-        
     }
     reset();
     printf("%s\n", p->content);
@@ -160,42 +211,40 @@ void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int i
   green();
   printf("\n---- CHAT ROOM -----\n");
   yellow();
-  printf ("\n\t---- Search result -----\n");
+  printf("\n\t---- Search result -----\n");
   reset();
   int i = 0;
   Message *p = root;
   while (p != NULL)
   {
-    
+
     if (p->ID == ids[i])
     {
-      
+
       i++;
       char timestr[64];
-    strcpy(timestr, convertTimeTtoString(p->datetime, 1));
+      strcpy(timestr, convertTimeTtoString(p->datetime, 1));
 
-    blue();
-    printf("ID %d", p->ID);
-    printf("(%s) ", timestr);
-    if (p->send_id != user_id)
-    {
-      green();
-      User *tmp = searchUserByID(u_root, p->send_id);
-      if (p->parent_id == 0)
-        printf("%s: ", tmp->name);
-      else
+      blue();
+      printf("ID %d", p->ID);
+      printf("(%s) ", timestr);
+      if (p->send_id != user_id)
       {
-        purple();
-        printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
-        reset();
+        green();
+        User *tmp = searchUserByID(u_root, p->send_id);
+        if (p->parent_id == 0)
+          printf("%s: ", tmp->name);
+        else
+        {
+          purple();
+          printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
+          reset();
+        }
       }
-        
+      reset();
+      printf("%s\n", p->content);
     }
-    reset();
-    printf("%s\n", p->content);
-    }
-    
-    
+
     p = p->next;
   }
   printf("(You can enter %s for some instruction.)\n", KEY_HELP);

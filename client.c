@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define BUFFER_SZ 512
+#define BUFFER_SZ 4096
 
 #include "views/screen.h"
 #include "models/utils.h"
@@ -124,42 +124,14 @@ void process_message(char message[])
 	{
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
-		int num_line = 0;
-		char newLine[5][256];
-		splitStringByLine(message, newLine, &num_line);
-		if (newLine[0] == 0)
-		{
-			cyan();
-			printf("You don't have any workspaces.\nUse %s <workspace_name> to create your workspace.\n", KEY_NEW);
-			reset();
-		}
-		else
-		{
-			green();
-			printf(" --- YOUR WORKSPACES --- \n");
-			reset();
-			for (int i = 1; i < num_line; i++)
-			{
-				if (strlen(newLine[i]) <= 1)
-				break;
-				int num_word = 0;
-				char newString[num_line][16];
-				splitString(newLine[i], newString, &num_word);
-				printf(" (ID %d) %s ", atoi(newString[0]), newString[1]);
-				if (atoi(newString[2]) == 1)
-				{
-					green();
-					printf(" (admin) ");
-					reset();
-				}
-				printf("\n");
-			}
-		}
+		ScreenViewListWSP(message);
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
 		cli->workspace_id = wsp_id;
-		ScreenInWSP(cli->workspace_id);
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenInWSP(message);
 	}
 	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
@@ -181,7 +153,7 @@ void process_message(char message[])
 	{
 
 		printf("%s", message);
-		ScreenInWSP(cli->workspace_id);
+		ScreenInWSP(message);
 		cli->room_id = -1;
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)

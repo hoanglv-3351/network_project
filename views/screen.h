@@ -23,7 +23,8 @@ void reset ();
 
 void ScreenLogin();
 void ScreenLoginSuccess();
-void ScreenInWSP();
+void ScreenViewListWSP(char message[]);
+void ScreenInWSP(char message[]);
 
 void ScreenChat(Message *root, int user_id, int wsp_id, int room_id);
 

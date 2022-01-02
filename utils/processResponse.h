@@ -11,5 +11,5 @@
 
 
 char * processResponseForViewWSP(User * user);
-
+char * processResponseForJoinWSP(User *user, int wsp_id);
 #endif
