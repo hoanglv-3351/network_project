@@ -23,6 +23,9 @@
 #include "models/signal.h"
 #include "models/keycode.h"
 
+
+#include "utils/processResponse.h"
+
 #define MAX_CLIENTS 100
 #define BUFFER_SZ 512
 
@@ -177,7 +180,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 	printf("%s", buff_out);
 
 	char information[BUFFER_SZ];
-	sprintf(information, "%d %s %s", cli->info->ID, cli->info->name,cli->info->password);
+	sprintf(information, "%d %s %s ", cli->info->ID, cli->info->name,cli->info->password);
 	send_message(information, cli);
 
 	//freeUserData(root);
@@ -354,10 +357,14 @@ void *handle_client(void *arg)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
 				}
-				// else if (strcmp(token, KEY_WSP) == 0)
-				// {
-				// 	send_message(MESS_VIEW_WSP, cli);
-				// }
+				else if (strcmp(token, KEY_WSP) == 0)
+				{
+					send_message(MESS_VIEW_WSP, cli);
+					char information[BUFFER_SZ];
+					strcpy(information, processResponseForViewWSP(cli->info));
+					send_message(information, cli);
+					
+				}
 				// else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
 				// {
 				// 	processWorkspace(cli, buff_out, &flag);

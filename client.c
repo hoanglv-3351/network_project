@@ -34,8 +34,6 @@ client_t *cli;
 int wsp_id = 0;
 int room_id = 0;
 
-
-
 void str_overwrite_stdout()
 {
 	green();
@@ -79,7 +77,7 @@ void send_msg_handler()
 		else
 		{
 			send(sockfd, buffer, strlen(buffer), 0);
-			
+
 			if (strstr(buffer, KEY_JOIN))
 			{
 				const char s[2] = " ";
@@ -103,10 +101,9 @@ void process_message(char message[])
 {
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
-		
+
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
-		//printf("%s", message);
 		int num_word = 0;
 		char newString[30][16];
 		splitString(message, newString, &num_word);
@@ -116,7 +113,6 @@ void process_message(char message[])
 
 		printf("Welcome %s\n", cli->info->name);
 		ScreenLoginSuccess();
-		
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{
@@ -126,15 +122,12 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
-		
-		WorkSpace *root = readWorkspaceData("db/workspaces.txt");
-		//printAllWSP(root);
-
-		int count = 0;
-		
-		int *list_wps = findWSPForUser(root, cli->info->ID, &count);
-		printf("%d\n", count);
-		if (count == 0)
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		int num_line = 0;
+		char newLine[5][256];
+		splitStringByLine(message, newLine, &num_line);
+		if (newLine[0] == 0)
 		{
 			cyan();
 			printf("You don't have any workspaces.\nUse %s <workspace_name> to create your workspace.\n", KEY_NEW);
@@ -142,20 +135,24 @@ void process_message(char message[])
 		}
 		else
 		{
-			printf("YOUR WORKSPACES\n");
-			for (int i = 0; i < count; i++)
+			green();
+			printf(" --- YOUR WORKSPACES --- \n");
+			reset();
+			for (int i = 1; i < num_line; i++)
 			{
+				if (strlen(newLine[i]) <= 1)
+				break;
+				int num_word = 0;
+				char newString[num_line][16];
+				splitString(newLine[i], newString, &num_word);
+				printf(" (ID %d) %s ", atoi(newString[0]), newString[1]);
+				if (atoi(newString[2]) == 1)
 				{
-					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
-					printf(" (ID %d) %s ", tmp->ID, tmp->name);
-					if (tmp->host_id == cli->info->ID)
-					{
-						green();
-						printf(" (admin) ");
-						reset();
-					}
-					printf("\n");
+					green();
+					printf(" (admin) ");
+					reset();
 				}
+				printf("\n");
 			}
 		}
 	}
@@ -176,25 +173,24 @@ void process_message(char message[])
 
 		char filename[32];
 		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		Message * root = readMessData(filename);
+		Message *root = readMessData(filename);
 		ScreenChat(root, cli->info->ID, cli->workspace_id, cli->room_id);
 		//freeMessData(root);
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-		
+
 		printf("%s", message);
 		ScreenInWSP(cli->workspace_id);
 		cli->room_id = -1;
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
 	{
-		
+
 		printf("%s", message);
 		ScreenLoginSuccess();
 		cli->workspace_id = -1;
 		cli->room_id = -1;
-		
 	}
 	else if (strcmp(message, KEY_HELP) == 0)
 	{
@@ -208,7 +204,7 @@ void process_message(char message[])
 		token = strtok(NULL, "");
 		User *u_root = readUserData("db/users.txt");
 		User *user = searchUserByID(u_root, send_id);
-		
+
 		DisplayReplyMessage(token, user->name, reply_id);
 	}
 	else if (strstr(message, KEY_FIND) && cli->room_id != -1 && cli->workspace_id != -1)
@@ -218,21 +214,21 @@ void process_message(char message[])
 
 		splitString(message, newString, &num_word);
 		int ids[64];
-		for (int i =1; i < num_word; i++)
+		for (int i = 1; i < num_word; i++)
 		{
-			ids[i-1] = atoi(newString[i]);
+			ids[i - 1] = atoi(newString[i]);
 		}
-		
+
 		char filename[32];
 		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		Message * root = readMessData(filename);
+		Message *root = readMessData(filename);
 		ScreenChatSearch(root, cli->info->ID, cli->workspace_id, cli->room_id, ids);
 	}
 	else if (strstr(message, KEY_HELP) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
 	{
 		ScreenRoomHelp();
 	}
-	
+
 	else if (cli->room_id != -1 && cli->workspace_id != -1)
 	{
 		char *token = strtok(message, " ");
@@ -240,9 +236,8 @@ void process_message(char message[])
 		token = strtok(NULL, "");
 		User *u_root = readUserData("db/users.txt");
 		User *user = searchUserByID(u_root, send_id);
-		
+
 		DisplayMessage(token, user->name);
-		
 	}
 
 	else
@@ -341,7 +336,6 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
-	
 
 	return EXIT_SUCCESS;
 }

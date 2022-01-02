@@ -168,3 +168,28 @@ char ** splitString(char str[], char newString[][16], int * num_word)
     return newString;
     
 }
+
+char ** splitStringByLine(char str[], char newString[][256], int * num_word)
+{
+  int j=0; 
+  int ctr =0;
+    for(int i=0;i<=(strlen(str));i++)
+    {
+      
+        // if space or NULL found, assign NULL into newString[ctr]
+        if(str[i]=='\n'||str[i]=='\0')
+        {
+            newString[ctr][j]='\0';
+            ctr++;  //for next word
+            j=0;    //for next word, init index to 0
+        }
+        else
+        {
+            newString[ctr][j]=str[i];
+            j++;
+        }
+    }
+    *num_word = ctr;
+    return newString;
+    
+}
