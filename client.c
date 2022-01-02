@@ -173,7 +173,7 @@ void process_message(char message[])
 		char filename[32];
 		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
 		Message * root = readMessData(filename);
-		ChatScreen(root, cli->info->ID, cli->workspace_id, cli->room_id);
+		ScreenChat(root, cli->info->ID, cli->workspace_id, cli->room_id);
 		//freeMessData(root);
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
@@ -196,7 +196,7 @@ void process_message(char message[])
 	{
 		ScreenRoomHelp();
 	}
-	else if (strcmp(message, KEY_REPLY) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
+	else if (strstr(message, KEY_REPLY) && cli->room_id != -1 && cli->workspace_id != -1)
 	{
 		char *token = strtok(message, " ");
 		int send_id = atoi(strtok(NULL, " "));
@@ -206,6 +206,27 @@ void process_message(char message[])
 		User *user = searchUserByID(u_root, send_id);
 		
 		DisplayReplyMessage(token, user->name, reply_id);
+	}
+	else if (strstr(message, KEY_FIND) && cli->room_id != -1 && cli->workspace_id != -1)
+	{
+		int num_word = 0;
+		char newString[30][16];
+
+		splitString(message, newString, &num_word);
+		int ids[64];
+		for (int i =1; i < num_word; i++)
+		{
+			ids[i-1] = atoi(newString[i]);
+		}
+		printf("112\n");
+		char filename[32];
+		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+		Message * root = readMessData(filename);
+		ScreenChatSearch(root, cli->info->ID, cli->workspace_id, cli->room_id, ids);
+	}
+	else if (strstr(message, KEY_HELP) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
+	{
+		ScreenRoomHelp();
 	}
 	
 	else if (cli->room_id != -1 && cli->workspace_id != -1)

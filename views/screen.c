@@ -67,7 +67,7 @@ void ScreenLoginSuccess()
   reset();
   printf(" 1. Enter %s to view your profile\n", KEY_VIEW);
   printf(" 2. Enter %s to view all of your workspaces\n", KEY_WSP);
-  printf(" 3. Enter %s <workspace_name> to join a workspace.\n", KEY_JOIN);
+  printf(" 3. Enter %s <workspace_id> to join a workspace.\n", KEY_JOIN);
   printf(" 4. Enter %s to logout the app.\n", KEY_LOGOUT);
   green();
   printf("\n#### -------- THANK YOU --------- ##\n");
@@ -107,7 +107,7 @@ void ScreenInWSP(int wsp_id)
   reset();
 }
 
-void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
+void ScreenChat(Message *root, int user_id, int wsp_id, int room_id)
 {
 
   User *u_root = readUserData("db/users.txt");
@@ -133,12 +133,68 @@ void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
       if (p->parent_id == 0)
         printf("%s: ", tmp->name);
       else
+      {
+        purple();
         printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
+        reset();
+      }
+        
     }
     reset();
     printf("%s\n", p->content);
     p = p->next;
   }
+  printf("(You can enter %s for some instruction.)\n", KEY_HELP);
+}
+
+void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int ids[])
+{
+
+  User *u_root = readUserData("db/users.txt");
+
+  //system("clear");
+  green();
+  printf("\n---- CHAT ROOM -----\n");
+  yellow();
+  printf ("\n\t---- Search result -----\n");
+  reset();
+  int i = 0;
+  Message *p = root;
+  while (p != NULL)
+  {
+    printf("113\n");
+    if (p->ID == ids[i])
+    {
+      printf("114\n");
+      i++;
+      char timestr[64];
+    strcpy(timestr, convertTimeTtoString(p->datetime, 1));
+
+    blue();
+    printf("ID %d", p->ID);
+    printf("(%s) ", timestr);
+    if (p->send_id != user_id)
+    {
+      green();
+      User *tmp = searchUserByID(u_root, p->send_id);
+      if (p->parent_id == 0)
+        printf("%s: ", tmp->name);
+      else
+      {
+        purple();
+        printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
+        reset();
+      }
+        
+    }
+    reset();
+    printf("%s\n", p->content);
+    }
+    
+    
+    p = p->next;
+  }
+  printf("(You can enter %s for some instruction.)\n", KEY_HELP);
 }
 
 void DisplayMessage(char message[], char name[])
@@ -166,8 +222,8 @@ void ScreenRoomHelp()
   printf("\n (Here is some instructions for you)\n\n");
   reset();
   printf(" 1. Enter %s <message_id> to reply any message.\n", KEY_REPLY);
-  printf(" 2. Enter %s <date> to find messages in selected day. Ex: #FIND 30/1/2021 \n", KEY_FIND);
-  printf(" 3. Enter %s %s <date from> to find all message from selected day.\n", KEY_FIND, KEY_FROM);
-  printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
+  printf(" 2. Enter %s <date> to find messages from selected day. Format: #FIND 30/1/2021 \n", KEY_FIND);
+  // printf(" 3. Enter %s %s <date from> to find all message from selected day.\n", KEY_FIND, KEY_FROM);
+  //printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
   printf(" 4. Enter %s to lelf the room.\n", KEY_OUTROOM);
 }

@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #include <pthread.h>
 #include <sys/types.h>
@@ -181,7 +182,7 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
-	char *token = strtok(buff_out, s);
+	strtok(buff_out, s);
 	int wsp_id = atoi(strtok(NULL, s));
 
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
@@ -207,7 +208,7 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
-	char *token = strtok(buff_out, s);
+	strtok(buff_out, s);
 	int id = atoi(strtok(NULL, s));
 
 	if (id == cli->info->ID)
@@ -240,7 +241,7 @@ void processMessage(client_t *cli, char buff_out[], int parent_id)
 	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
 	printf("filename : %s\n", filename);
 	Message *root = readMessData(filename);
-	
+
 	printf("Read Mess Data done.\n");
 	printf("Mess time: %s\n", getCurrentTime(2));
 	if (root == NULL)
@@ -254,6 +255,74 @@ void processMessage(client_t *cli, char buff_out[], int parent_id)
 	printf("Write Mess data done.\n");
 	//freeMessData(root);
 	//printf("Free Mess data done.\n");
+}
+
+void processDate(client_t * cli,char date[])
+{
+	char filename[32];
+	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+	Message *root = readMessData(filename);
+	Message *p = root;
+	time_t time = convertStringToTimeT(date);
+
+	char tmp[BUFFER_SZ];
+	char response[BUFFER_SZ];
+	while (p!= NULL)
+	{
+		if (difftime(p->datetime, time) == 0)
+		{
+			sprintf(response, " %d", p->ID);
+			strcat(tmp, response);
+			memset(response, 0, sizeof(response));
+		}
+		p = p->next;
+	}
+	if (strlen(tmp) == 0)
+	{
+		send_message(MESS_SEARCH_ERROR, cli);
+		return;
+	}
+	else
+	{
+		sprintf(response, "%s", KEY_FIND);
+		strcat(response, tmp);
+		send_message(response, cli);
+		return;
+	}
+}
+void processDateFrom(client_t * cli,char date[])
+{
+	char filename[32];
+	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
+	Message *root = readMessData(filename);
+	Message *p = root;
+	time_t time = convertStringToTimeT(date);
+
+	char tmp[BUFFER_SZ];
+	char response[BUFFER_SZ];
+	while (p!= NULL)
+	{
+		if (difftime(p->datetime, time) >= 0)
+		{
+			sprintf(response, " %d", p->ID);
+			strcat(tmp, response);
+			memset(response, 0, sizeof(response));
+		}
+		p = p->next;
+	}
+	if (strlen(tmp) == 0)
+	{
+		send_message(MESS_SEARCH_ERROR, cli);
+		return;
+	}
+	else
+	{
+		sprintf(response, "%s", KEY_FIND);
+		strcat(response, tmp);
+		send_message(response, cli);
+		printf("Responf for find mess: %s\n", response);
+		return;
+	}
 }
 /* Handle all communication with the client */
 void *handle_client(void *arg)
@@ -356,7 +425,7 @@ void *handle_client(void *arg)
 					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
 					str_trim_lf(buff_out, strlen(buff_out));
 
-					char *token = strtok(buff_out, " ");
+					strtok(buff_out, " ");
 					int id = atoi(strtok(NULL, " "));
 					char *content = strtok(NULL, "");
 					processMessage(cli, content, id);
@@ -366,6 +435,31 @@ void *handle_client(void *arg)
 					strcat(tmp, buff_out);
 					send_message_chat(tmp, cli);
 				}
+				else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					// int num_word = 0;
+					// char newString[5][16];
+
+					// splitString(buff_out, newString, &num_word);
+					printf("1\n");
+					token = strtok(NULL,s);
+					processDateFrom(cli, token);
+					// if (num_word == 2 )
+					// {
+					// 	processDate(newString[1],cli);
+					// }
+					// else if (num_word == 3 && strcmp(newString[1], KEY_FROM) == 0)
+					// {
+					// 	processDateFrom(newString[2], cli);
+					// }
+					// else
+					// 	send_message("Wrong format to search. Read instructions again.", cli);
+				}
+				else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					send_message(buff_out, cli);
+				}
+				
 
 				else if (cli->workspace_id != -1 && cli->room_id != -1)
 				{

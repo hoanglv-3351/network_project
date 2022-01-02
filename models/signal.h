@@ -25,6 +25,7 @@
 #define MESS_IN_WSP "Now you are in workspace. Enter #HELP for some instruction."
 #define MESS_IN_ROOM "Now you are in room. Enter #HELP for some instruction."
 
+#define MESS_SEARCH_ERROR "No matching search results."
 #define MESS_ERROR "This message is wrong format or not allowed here."
 
 #endif
