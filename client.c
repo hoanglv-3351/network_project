@@ -31,7 +31,6 @@ typedef struct
 
 client_t *cli;
 
-char username[10];
 int wsp_id = 0;
 int room_id = 0;
 
@@ -80,13 +79,7 @@ void send_msg_handler()
 		else
 		{
 			send(sockfd, buffer, strlen(buffer), 0);
-			if (strstr(buffer, KEY_LOGIN))
-			{
-				const char s[2] = " ";
-				char *token = strtok(buffer, s);
-				token = strtok(NULL, s);
-				strcpy(username, token);
-			}
+			
 			if (strstr(buffer, KEY_JOIN))
 			{
 				const char s[2] = " ";
@@ -110,11 +103,20 @@ void process_message(char message[])
 {
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
-		User *root = readUserData("db/users.txt");
-		cli->info = searchUserByUsername(root, username);
+		
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		//printf("%s", message);
+		int num_word = 0;
+		char newString[30][16];
+		splitString(message, newString, &num_word);
+		cli->info->ID = atoi(newString[0]);
+		strcpy(cli->info->name, newString[1]);
+		strcpy(cli->info->password, newString[2]);
 
 		printf("Welcome %s\n", cli->info->name);
 		ScreenLoginSuccess();
+		
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{

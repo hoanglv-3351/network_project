@@ -144,21 +144,26 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 		return;
 	}
 
-	const char s[2] = " ";
-	char *token, *username, *password;
-	token = strtok(buff_out, s);
-	if (strcmp(token, KEY_LOGIN) != 0)
+	int num_word = 0;
+	char newString[30][16];
+
+	splitString(buff_out, newString, &num_word);
+	if (strcmp(newString[0], KEY_LOGIN) != 0)
 	{
-		send_message("Error input. Must begin by #LOGIN\n", cli);
+		send_message("Error format input. Must begin by #LOGIN\n", cli);
+		return;
+	}
+	if (num_word != 3)
+	{
+		send_message("Error format input. #LOGIN <username> <password>\n", cli);
 		return;
 	}
 
-	username = strtok(NULL, s);
-	password = strtok(NULL, s);
-	printf("Username: %s - Pasword :  %s\n", username, password);
+
+	printf("Username: %s - Pasword :  %s\n", newString[1], newString[2]);
 
 	User *root = readUserData("db/users.txt");
-	char *response = verifyAccount(root, username, password, flag);
+	char *response = verifyAccount(root, newString[1], newString[2], flag);
 	send_message(response, cli);
 
 	if (*flag != 1)
@@ -166,9 +171,14 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 		return;
 	}
 
-	cli->info = searchUserByUsername(root, username);
-	sprintf(buff_out, "%s has joined\n", username);
+
+	cli->info = searchUserByUsername(root, newString[1]);
+	sprintf(buff_out, "%s has joined\n", cli->info->name);
 	printf("%s", buff_out);
+
+	char information[BUFFER_SZ];
+	sprintf(information, "%d %s %s", cli->info->ID, cli->info->name,cli->info->password);
+	send_message(information, cli);
 
 	//freeUserData(root);
 }
@@ -257,39 +267,6 @@ void processMessage(client_t *cli, char buff_out[], int parent_id)
 	//printf("Free Mess data done.\n");
 }
 
-void processDate(client_t * cli,char date[])
-{
-	char filename[32];
-	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-	Message *root = readMessData(filename);
-	Message *p = root;
-	time_t time = convertStringToTimeT(date);
-
-	char tmp[BUFFER_SZ];
-	char response[BUFFER_SZ];
-	while (p!= NULL)
-	{
-		if (difftime(p->datetime, time) == 0)
-		{
-			sprintf(response, " %d", p->ID);
-			strcat(tmp, response);
-			memset(response, 0, sizeof(response));
-		}
-		p = p->next;
-	}
-	if (strlen(tmp) == 0)
-	{
-		send_message(MESS_SEARCH_ERROR, cli);
-		return;
-	}
-	else
-	{
-		sprintf(response, "%s", KEY_FIND);
-		strcat(response, tmp);
-		send_message(response, cli);
-		return;
-	}
-}
 void processDateFrom(client_t * cli,char date[])
 {
 	char filename[32];
@@ -377,106 +354,106 @@ void *handle_client(void *arg)
 				{
 					send_message(MESS_VIEW_PROFILE, cli);
 				}
-				else if (strcmp(token, KEY_WSP) == 0)
-				{
-					send_message(MESS_VIEW_WSP, cli);
-				}
-				else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
-				{
-					processWorkspace(cli, buff_out, &flag);
-				}
-				else if (strcmp(token, KEY_JOIN) == 0)
-				{
-					send_message(MESS_IN_WSP, cli);
-				}
-				else if (strcmp(token, KEY_CONNECT) == 0 && cli->workspace_id == -1)
-				{
-					send_message(MESS_JOIN_WSP_WARN, cli);
-				}
-				else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
-				{
-					processChatroom(cli, buff_out, &flag);
-				}
-				else if (strcmp(token, KEY_CONNECT) == 0)
-				{
-					send_message(MESS_IN_ROOM, cli);
-				}
-				else if (strcmp(token, KEY_OUTROOM) == 0 && cli->room_id != -1)
-				{
-					send_message(MESS_OUT_ROOM_SUCCESS, cli);
-					cli->room_id = -1;
-				}
-				else if (strcmp(token, KEY_OUTROOM) == 0)
-				{
-					send_message("You are not in any chatroom.", cli);
-				}
-				else if (strcmp(token, KEY_OUT) == 0 && cli->workspace_id != -1)
-				{
-					send_message(MESS_OUT_WSP_SUCCESS, cli);
-					cli->workspace_id = -1;
-					cli->room_id = -1;
-				}
-				else if (strcmp(token, KEY_OUT) == 0)
-				{
-					send_message("You are not in any workspace.", cli);
-				}
-				else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				{
-					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
-					str_trim_lf(buff_out, strlen(buff_out));
+				// else if (strcmp(token, KEY_WSP) == 0)
+				// {
+				// 	send_message(MESS_VIEW_WSP, cli);
+				// }
+				// else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
+				// {
+				// 	processWorkspace(cli, buff_out, &flag);
+				// }
+				// else if (strcmp(token, KEY_JOIN) == 0)
+				// {
+				// 	send_message(MESS_IN_WSP, cli);
+				// }
+				// else if (strcmp(token, KEY_CONNECT) == 0 && cli->workspace_id == -1)
+				// {
+				// 	send_message(MESS_JOIN_WSP_WARN, cli);
+				// }
+				// else if (strcmp(token, KEY_CONNECT) == 0 && cli->room_id == -1)
+				// {
+				// 	processChatroom(cli, buff_out, &flag);
+				// }
+				// else if (strcmp(token, KEY_CONNECT) == 0)
+				// {
+				// 	send_message(MESS_IN_ROOM, cli);
+				// }
+				// else if (strcmp(token, KEY_OUTROOM) == 0 && cli->room_id != -1)
+				// {
+				// 	send_message(MESS_OUT_ROOM_SUCCESS, cli);
+				// 	cli->room_id = -1;
+				// }
+				// else if (strcmp(token, KEY_OUTROOM) == 0)
+				// {
+				// 	send_message("You are not in any chatroom.", cli);
+				// }
+				// else if (strcmp(token, KEY_OUT) == 0 && cli->workspace_id != -1)
+				// {
+				// 	send_message(MESS_OUT_WSP_SUCCESS, cli);
+				// 	cli->workspace_id = -1;
+				// 	cli->room_id = -1;
+				// }
+				// else if (strcmp(token, KEY_OUT) == 0)
+				// {
+				// 	send_message("You are not in any workspace.", cli);
+				// }
+				// else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				// {
+				// 	printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
+				// 	str_trim_lf(buff_out, strlen(buff_out));
 
-					strtok(buff_out, " ");
-					int id = atoi(strtok(NULL, " "));
-					char *content = strtok(NULL, "");
-					processMessage(cli, content, id);
+				// 	strtok(buff_out, " ");
+				// 	int id = atoi(strtok(NULL, " "));
+				// 	char *content = strtok(NULL, "");
+				// 	processMessage(cli, content, id);
 
-					char tmp[BUFFER_SZ];
-					sprintf(tmp, "%s %d %d ", KEY_REPLY, cli->info->ID, id);
-					strcat(tmp, buff_out);
-					send_message_chat(tmp, cli);
-				}
-				else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				{
-					// int num_word = 0;
-					// char newString[5][16];
+				// 	char tmp[BUFFER_SZ];
+				// 	sprintf(tmp, "%s %d %d ", KEY_REPLY, cli->info->ID, id);
+				// 	strcat(tmp, buff_out);
+				// 	send_message_chat(tmp, cli);
+				// }
+				// else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				// {
+				// 	// int num_word = 0;
+				// 	// char newString[5][16];
 
-					// splitString(buff_out, newString, &num_word);
-					printf("1\n");
-					token = strtok(NULL,s);
-					processDateFrom(cli, token);
-					// if (num_word == 2 )
-					// {
-					// 	processDate(newString[1],cli);
-					// }
-					// else if (num_word == 3 && strcmp(newString[1], KEY_FROM) == 0)
-					// {
-					// 	processDateFrom(newString[2], cli);
-					// }
-					// else
-					// 	send_message("Wrong format to search. Read instructions again.", cli);
-				}
-				else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				{
-					send_message(buff_out, cli);
-				}
+				// 	// splitString(buff_out, newString, &num_word);
+				// 	printf("1\n");
+				// 	token = strtok(NULL,s);
+				// 	processDateFrom(cli, token);
+				// 	// if (num_word == 2 )
+				// 	// {
+				// 	// 	processDate(newString[1],cli);
+				// 	// }
+				// 	// else if (num_word == 3 && strcmp(newString[1], KEY_FROM) == 0)
+				// 	// {
+				// 	// 	processDateFrom(newString[2], cli);
+				// 	// }
+				// 	// else
+				// 	// 	send_message("Wrong format to search. Read instructions again.", cli);
+				// }
+				// else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				// {
+				// 	send_message(buff_out, cli);
+				// }
 				
 
-				else if (cli->workspace_id != -1 && cli->room_id != -1)
-				{
-					printf("Mess %s -> %s\n", cli->info->name, buff_out);
-					str_trim_lf(buff_out, strlen(buff_out));
+				// else if (cli->workspace_id != -1 && cli->room_id != -1)
+				// {
+				// 	printf("Mess %s -> %s\n", cli->info->name, buff_out);
+				// 	str_trim_lf(buff_out, strlen(buff_out));
 
-					if (flag == -1)
-					{
-						break;
-					}
-					processMessage(cli, buff_out, 0);
+				// 	if (flag == -1)
+				// 	{
+				// 		break;
+				// 	}
+				// 	processMessage(cli, buff_out, 0);
 
-					char tmp[BUFFER_SZ];
-					sprintf(tmp, "%d ", cli->info->ID);
-					strcat(tmp, buff_out);
-					send_message_chat(tmp, cli);
-				}
+				// 	char tmp[BUFFER_SZ];
+				// 	sprintf(tmp, "%d ", cli->info->ID);
+				// 	strcat(tmp, buff_out);
+				// 	send_message_chat(tmp, cli);
+				// }
 				else
 				{
 					send_message(MESS_ERROR, cli);
