@@ -17,12 +17,12 @@
 #include "views/screen.h"
 
 #include "models/user.h"
-#include "models/utils.h"
 #include "models/workspace.h"
 #include "models/message.h"
 #include "models/signal.h"
 #include "models/keycode.h"
 
+#include "utils/utils.h"
 #include "utils/processResponse.h"
 
 #define MAX_CLIENTS 100

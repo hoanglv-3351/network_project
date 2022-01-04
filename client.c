@@ -12,7 +12,7 @@
 #define BUFFER_SZ 4096
 
 #include "views/screen.h"
-#include "models/utils.h"
+#include "utils/utils.h"
 #include "models/signal.h"
 #include "models/user.h"
 #include "models/workspace.h"

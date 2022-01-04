@@ -15,8 +15,6 @@ server.o: server.c
 	${CC} ${CFLAGS} server.c -pthread
 client.o: client.c
 	${CC} ${CFLAGS} client.c
-utils.o: models/utils.c
-	${CC} ${CFLAGS} models/utils.c
 user.o: models/user.c
 	${CC} ${CFLAGS} models/user.c
 room.o: models/room.c
@@ -26,7 +24,8 @@ workspace.o: models/workspace.c
 message.o: models/message.c
 	${CC} ${CFLAGS} models/message.c
 
-
+utils.o: utils/utils.c
+	${CC} ${CFLAGS} utils/utils.c
 processResponse.o: utils/processResponse.c
 	${CC} ${CFLAGS} utils/processResponse.c
 

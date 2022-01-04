@@ -4,7 +4,7 @@
 
 #include "signal.h"
 #include "message.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 Message *createNewMess(int parent_id, char time[], int send_id,  char content[])
 {

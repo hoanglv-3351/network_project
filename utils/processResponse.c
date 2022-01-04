@@ -9,7 +9,7 @@
 #include "../models/room.h"
 #include "../models/user.h"
 #include "../models/message.h"
-#include "../models/utils.h"
+#include "utils.h"
 
 char *processResponseForViewWSP(User *user, int size)
 {

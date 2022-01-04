@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "../models/user.h"
-#include "../models/utils.h"
+#include "../utils/utils.h"
 #include "../models/workspace.h"
 #include "../models/message.h"
 #include "../models/keycode.h"
