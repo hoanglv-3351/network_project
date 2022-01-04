@@ -234,7 +234,7 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 	}
 
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", cli->workspace_id);
-	char *response = checkAvailableID(wsp, id, flag);
+	char *response = checkAvailableID(wsp, id, cli->info->ID, flag);
 	send_message(response, cli);
 
 	if (*flag != 3)
@@ -424,14 +424,15 @@ void *handle_client(void *arg)
 					char information[BUFFER_SZ];
 					if (strstr(token, KEY_FIND_CONTENT))
 					{
-						strcpy(information, processResponseForFindContent(cli->info, cli->workspace_id, cli->room_id, token));
+						strcpy(information, processResponseForFindContent(cli->info, cli->workspace_id, cli->room_id, token, BUFFER_SZ));
 					}
 					else{
-						strcpy(information, processResponseForFindDate(cli->info, cli->workspace_id, cli->room_id, token));
+						strcpy(information, processResponseForFindDate(cli->info, cli->workspace_id, cli->room_id, token, BUFFER_SZ));
 					}
-					send_message(MESS_FIND,cli);
-					sleep(0.1);
+					if (strcmp(information, MESS_FIND_ERROR) != 0)
+						send_message(MESS_FIND,cli);
 					send_message(information, cli);
+					
 				}
 				else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
 				{

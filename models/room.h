@@ -20,7 +20,7 @@ typedef struct Room{
 Room * readOneRoomData(char filename[], int wsp_id, int room_id);
 
 
-Room * createNewRoom(int ID, char name[]);
+Room * createNewRoom(int ID, char name[], int wsp_id);
 void insertRoom(Room *root, char name[]);
 
 

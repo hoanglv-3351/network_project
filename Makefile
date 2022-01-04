@@ -4,8 +4,8 @@ LIBS =  -lm
 
 all: server client
 
-client: client.o utils.o user.o workspace.o message.o screen.o
-	${CC} client.o utils.o user.o workspace.o message.o screen.o -o client -pthread -lm
+client: client.o utils.o  screen.o
+	${CC} client.o utils.o  screen.o -o client -pthread -lm
 
 server: server.o utils.o user.o workspace.o room.o message.o processResponse.o
 	${CC} server.o utils.o user.o workspace.o room.o message.o processResponse.o -o server -pthread -lm

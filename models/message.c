@@ -65,7 +65,6 @@ Message *readMessData(char filename[])
     if (!(f = fopen(filename, "r")))
     {
         printf("-1\n");
-        printf("The two of you have connected and can start talking to each other.\n");
         return NULL;
     }
     else

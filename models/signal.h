@@ -17,9 +17,10 @@
 
 
 
-#define MESS_JOIN_ROOM_SUCCESS "Connect to chatroom succefully.Now you can begin to chat."
+#define MESS_JOIN_ROOM_SUCCESS "Connect to chatroom succefully. Now you can begin to chat."
 #define MESS_INVALID_ID "This room/user isn't available."
 #define MESS_ERROR_SELFCHAT "You can't chat with yourself."
+#define MESS_BEGIN_CHAT "The two of you have connected and can start talking to each other."
 #define MESS_OUT_ROOM_SUCCESS "Leave out room succefully\n"
 
 #define MESS_IN_WSP "Now you are in workspace. Enter #HELP for some instruction."

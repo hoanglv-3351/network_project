@@ -153,8 +153,10 @@ void process_message(char message[])
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
-		ScreenChat(message);
-		printf("Now in room = %d %d \n", room_id,cli->room_id);
+		if (strcmp(message, MESS_BEGIN_CHAT) != 0)
+			ScreenChat(message);
+		else
+			printf("%s\n", message);
 
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)

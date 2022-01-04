@@ -96,6 +96,10 @@ char *processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size)
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
     Message *root = readMessData(filename);
+    if (root == NULL)
+    {
+        return MESS_BEGIN_CHAT;
+    }
     User *u_root = readUserData("db/users.txt");
     Message *p = root;
 
@@ -153,10 +157,10 @@ char *processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size)
     return information;
 }
 
-char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[])
+char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[], int size)
 {
     // static char information[4096];
-    char * information = (char*) malloc(4096 * sizeof(char));
+    char * information = (char*) malloc(size * sizeof(char));
 
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
@@ -220,10 +224,10 @@ char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[
 }
 
 
-char *processResponseForFindContent(User *user, int wsp_id, int room_id, char content[])
+char *processResponseForFindContent(User *user, int wsp_id, int room_id, char content[], int size)
 {
     //static char information[4096];
-    char * information = (char*) malloc(4096* sizeof(char));
+    char * information = (char*) malloc( size* sizeof(char));
 
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
@@ -232,27 +236,28 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
     Message *p = root;
 
     int count_mess = 0;
-
-    p = root;
     char temp[3];
     while (p != NULL)
     {
-        if (strstr(p->content, content))
+        if (strstr(p->content, content) != NULL)
         {
             if (count_mess == 10)
             {
                 break;
             }
             count_mess++ ;
+            // line 0: ID of mess
             sprintf(temp, "%d\n", p->ID);
             strcat(information, temp);
 
+            // line 1: time of mess
             char timestr[64];
             strcpy(timestr, convertTimeTtoString(p->datetime, 1));
             strcat(information, timestr);
             strcat(information, "\n");
             if (p->send_id != user->ID)
             {
+                // line 2: send name of mess 
                 User *tmp = searchUserByID(u_root, p->send_id);
                 strcat(information, tmp->name);
                 strcat(information, "\n");
@@ -263,6 +268,7 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
             }
             if (p->parent_id != 0)
             {
+                // line 3: reply
                 Message *tmp = findMessByID(root, p->parent_id);
                 strcat(information, tmp->content);
                 strcat(information, "\n");
@@ -271,6 +277,7 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
             {
                 strcat(information, "0\n");
             }
+            //line 4: content
             strcat(information, p->content);
             strcat(information, "\n");
         }
