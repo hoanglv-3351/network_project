@@ -176,8 +176,6 @@ void ScreenChat(char message[])
   splitStringByLine(message, newLine, &num_line);
   for (int i = 0; i < num_line - 5; i = i + 5)
   {
-    printf("%s\n", newLine[i]);
-
     blue();
     printf("ID %d", atoi(newLine[i]));
     printf("(%s) ", newLine[i + 1]);
@@ -201,71 +199,32 @@ void ScreenChat(char message[])
   printf("(You can enter %s for some instruction.)\n", KEY_HELP);
 }
 
-void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int ids[])
+
+void DisplayMessage(char message[])
 {
-
-  User *u_root = readUserData("db/users.txt");
-
-  //system("clear");
-  green();
-  printf("\n---- CHAT ROOM -----\n");
-  yellow();
-  printf("\n\t---- Search result -----\n");
-  reset();
-  int i = 0;
-  Message *p = root;
-  while (p != NULL)
-  {
-
-    if (p->ID == ids[i])
-    {
-
-      i++;
-      char timestr[64];
-      strcpy(timestr, convertTimeTtoString(p->datetime, 1));
-
-      blue();
-      printf("ID %d", p->ID);
-      printf("(%s) ", timestr);
-      if (p->send_id != user_id)
-      {
-        green();
-        User *tmp = searchUserByID(u_root, p->send_id);
-        if (p->parent_id == 0)
-          printf("%s: ", tmp->name);
-        else
-        {
-          purple();
-          printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
-          reset();
-        }
-      }
-      reset();
-      printf("%s\n", p->content);
-    }
-
-    p = p->next;
-  }
-  printf("(You can enter %s for some instruction.)\n", KEY_HELP);
-}
-
-void DisplayMessage(char message[], char name[])
-{
+  int num_line = 0;
+  char newLine[4][128];
+  splitStringByLine(message, newLine, &num_line);
   blue();
-  printf("(%s)", getCurrentTime(1));
+  printf("ID %d (%s)", atoi(newLine[0]), newLine[2]);
   green();
-  printf("%s: ", name);
+  printf("From %s: ", newLine[1]);
   reset();
-  printf("%s", message);
+  printf("%s", newLine[3]);
+  return;
 }
-void DisplayReplyMessage(char message[], char name[], int reply_id)
+void DisplayReplyMessage(char message[])
 {
+  int num_line = 0;
+  char newLine[5][128];
+  splitStringByLine(message, newLine, &num_line);
   blue();
-  printf("(%s)", getCurrentTime(1));
+  printf("ID %d (%s)", atoi(newLine[0]), newLine[2]);
   green();
-  printf("%s reply mess ID %d: ", name, reply_id);
+  printf("From %s (Reply %s): ", newLine[1], newLine[3]);
   reset();
-  printf("%s", message);
+  printf("%s", newLine[4]);
+  return;
 }
 
 void ScreenRoomHelp()
@@ -275,7 +234,7 @@ void ScreenRoomHelp()
   reset();
   printf(" 1. Enter %s <message_id> to reply any message.\n", KEY_REPLY);
   printf(" 2. Enter %s <date> to find messages from selected day. Format: #FIND 30/1/2021 \n", KEY_FIND);
-  // printf(" 3. Enter %s %s <date from> to find all message from selected day.\n", KEY_FIND, KEY_FROM);
+  printf(" 3. Enter %s %s <search words> to find all message have matching words.\n", KEY_FIND, KEY_FIND_CONTENT);
   //printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
   printf(" 4. Enter %s to lelf the room.\n", KEY_OUTROOM);
 }

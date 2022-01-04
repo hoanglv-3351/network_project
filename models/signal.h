@@ -13,7 +13,7 @@
 #define MESS_JOIN_WSP_SUCCESS "Join workspace succefully."
 #define MESS_JOIN_WSP_FAILED "You don't have this workspace."
 #define MESS_JOIN_WSP_WARN "You have to join workspace for use app features."
-#define MESS_OUT_WSP_SUCCESS "Leave workspace success."
+#define MESS_OUT_WSP_SUCCESS "Leave workspace successfully."
 
 
 
@@ -25,7 +25,11 @@
 #define MESS_IN_WSP "Now you are in workspace. Enter #HELP for some instruction."
 #define MESS_IN_ROOM "Now you are in room. Enter #HELP for some instruction."
 
-#define MESS_SEARCH_ERROR "No matching search results."
+#define MESS_FIND "Find message succesfully."
+#define MESS_FIND_ERROR "No message matching results."
+#define MESS_REPLY "Reply message succesfully."
+#define MESS_REPLY_ERROR "Rely failed. Unavailable reply message ID."
+
 #define MESS_ERROR "This message is wrong format or not allowed here."
 
 #endif

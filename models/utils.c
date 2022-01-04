@@ -193,3 +193,33 @@ char ** splitStringByLine(char str[], char newString[][128], int * num_word)
     return newString;
     
 }
+
+
+// char * getFirstLine(char str[], char * newString[])
+// {
+//   int j=0, i = 0; 
+//   int ctr =0;
+//     for( i=0;i<=(strlen(str));i++)
+//     {   
+
+//         // if space or NULL found, assign NULL into newString[ctr]
+//         if(str[i]=='\n'||str[i]=='\0')
+//         {
+//             newString[0][j]='\0';
+//             j = 0;
+//             break;
+//         }
+//         else
+//         {
+//             newString[0][j]=str[i];
+//             j++;
+//         }
+//     }
+//     for(int k=i;k<=(strlen(str));j++,k++)
+//     {   
+//       newString[1][j]=str[k];
+//     }
+//     *num_word = ctr;
+//     return newString;
+    
+// }

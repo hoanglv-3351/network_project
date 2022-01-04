@@ -29,7 +29,7 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
     FILE *f;
     if (!(f = fopen(filename, "r")))
     {
-        //printf("\nCreate Workspace Database failed! File Users not found.\n");
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
         
     }
     else
@@ -43,15 +43,13 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
 
     // read Each WorkSpace room
     strcpy(filename,"db/workspace_rooms_");
-    memset(tmp, 0, sizeof(tmp));
     sprintf(tmp, "%d", id);
     strcat(filename, tmp);
     strcat(filename, ".txt");
     printf("File room %s\n", filename);
     if (!(f = fopen(filename, "r")))
     {
-        //printf("\nCreate Workspace Database failed! File Rooms not found.\n");
-        
+        printf("\nCreate Workspace Database failed! File Rooms not found.\n");        
     }
     else
     {
@@ -155,7 +153,7 @@ WorkSpace *readWorkspaceData(char filename[])
 // input wsp_id and read data of only this workspace
 WorkSpace *readOneWSPData(char filename[], int wsp_id)
 {
-    WorkSpace *root;
+    //WorkSpace *root=NULL;
 
     int id, host_id;
     char wsp_name[32];
@@ -167,20 +165,27 @@ WorkSpace *readOneWSPData(char filename[], int wsp_id)
     }
     else
     {
+        
         int number_of_workspaces = 0;
         fscanf(f, "%d\n", &number_of_workspaces);
         if (number_of_workspaces == 0)
             return NULL;
         while (!feof(f))
         {
+            
             fscanf(f, "%d\n%d\n%s\n", &id, &host_id, wsp_name);
-
+            
             if (id == wsp_id)
-                root = createNewWSP(wsp_id, host_id, wsp_name);
+            {
+                
+                fclose(f);
+                return createNewWSP(wsp_id, host_id, wsp_name);
+            }
+                
         }
     }
     fclose(f);
-    return root;
+    return NULL;
 }
 int valueInArray(int val, int *arr)
 {
@@ -201,6 +206,7 @@ int * findWSPForUser(WorkSpace *root, int user_id, int *count)
     *count = 0;
     while (p != NULL)
     {
+        
         if (valueInArray(user_id, p->user_id) == 1)
         {
             list_wps[*count] = p->ID;
@@ -213,7 +219,7 @@ int * findWSPForUser(WorkSpace *root, int user_id, int *count)
 }
 
 // input is a user and a workspace, check if user belong to this wsp
-char *checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
+char * checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
 {
     if (valueInArray(user_id, wsp->user_id) == 1)
     {

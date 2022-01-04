@@ -44,6 +44,7 @@ void freeMessData(Message * root);
 
 
 Message *findMessByID(Message *root, int ID);
+Message *findLastMess(Message *root);
 Message *findMessFromDate(time_t time);
 Message *findMessFromToDate(time_t from_time, time_t to_time);
 Message *findMessInDate(time_t time);

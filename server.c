@@ -23,7 +23,6 @@
 #include "models/signal.h"
 #include "models/keycode.h"
 
-
 #include "utils/processResponse.h"
 
 #define MAX_CLIENTS 100
@@ -162,25 +161,25 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 		return;
 	}
 
-
 	printf("Username: %s - Pasword :  %s\n", newString[1], newString[2]);
 
 	User *root = readUserData("db/users.txt");
 	char *response = verifyAccount(root, newString[1], newString[2], flag);
 	send_message(response, cli);
+	printf("Response: %s\n", response);
 
 	if (*flag != 1)
 	{
 		return;
 	}
 
-
 	cli->info = searchUserByUsername(root, newString[1]);
 	sprintf(buff_out, "%s has joined\n", cli->info->name);
 	printf("%s", buff_out);
 
-	char information[BUFFER_SZ];
-	sprintf(information, "%d %s %s ", cli->info->ID, cli->info->name,cli->info->password);
+	char information[128];
+	sprintf(information, "%d %s %s", cli->info->ID, cli->info->name, cli->info->password);
+	sleep(0.1);
 	send_message(information, cli);
 
 	//freeUserData(root);
@@ -199,8 +198,15 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	int wsp_id = atoi(strtok(NULL, s));
 
 	WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+	if (wsp == NULL)
+	{
+		send_message(MESS_JOIN_WSP_FAILED, cli);
+		return;
+	}
 	char *response = checkWSPForUser(wsp, cli->info->ID, flag);
 	send_message(response, cli);
+	printf("Response: %s", response);
+	printf("Flag %d\n", *flag);
 
 	if (*flag != 2)
 	{
@@ -209,18 +215,13 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 
 	cli->workspace_id = wsp_id;
 	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
-	char information[BUFFER_SZ];
-	strcpy(information, processResponseForJoinWSP(cli->info, cli->workspace_id));
+	char information[512];
+	strcpy(information, processResponseForJoinWSP(cli->info, cli->workspace_id, 512));
 	send_message(information, cli);
 }
 
 void processChatroom(client_t *cli, char buff_out[], int *flag)
 {
-	if (cli->room_id != -1)
-	{
-		send_message(MESS_IN_ROOM, cli);
-		return;
-	}
 	printf("%s -> %s\n", cli->info->name, buff_out);
 	const char s[2] = " ";
 	strtok(buff_out, s);
@@ -248,67 +249,61 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 		cli->room_id = id;
 	printf("%s join room %d\n", cli->info->name, cli->room_id);
 	char information[BUFFER_SZ];
-	strcpy(information, processResponseForJoinRoom(cli->info, cli->workspace_id, cli->room_id));
+	strcpy(information, processResponseForJoinRoom(cli->info, cli->workspace_id, cli->room_id, BUFFER_SZ ));
 	send_message(information, cli);
-	
 }
 
-void processMessage(client_t *cli, char buff_out[], int parent_id)
+void processMessage(client_t *cli, char content[], int parent_id)
 {
 	char filename[32];
 	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-	printf("filename : %s\n", filename);
+	printf("Filename : %s\n", filename);
 	Message *root = readMessData(filename);
-
 	printf("Read Mess Data done.\n");
-	printf("Mess time: %s\n", getCurrentTime(2));
+
+	Message *parent;
+	if (parent_id != 0)
+	{
+		parent = findMessByID(root, parent_id);
+		if (parent == NULL)
+		{
+			send_message(MESS_REPLY_ERROR, cli);
+			return;
+		}
+	}
+
+	// printf("Mess time: %s\n", getCurrentTime(2));
 	if (root == NULL)
 	{
 		printf("Read mess null.\n");
-		root = createNewMess(parent_id, getCurrentTime(2), cli->info->ID, buff_out);
+		root = createNewMess(parent_id, getCurrentTime(2), cli->info->ID, content);
 	}
 	else
-		root = insertMess(root, parent_id, getCurrentTime(2), cli->info->ID, buff_out);
+		root = insertMess(root, parent_id, getCurrentTime(2), cli->info->ID, content);
 	writeMessData(root, cli->workspace_id, cli->room_id);
 	printf("Write Mess data done.\n");
-	//freeMessData(root);
-	//printf("Free Mess data done.\n");
-}
 
-void processDateFrom(client_t * cli,char date[])
-{
-	char filename[32];
-	strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-	Message *root = readMessData(filename);
-	Message *p = root;
-	time_t time = convertStringToTimeT(date);
-
-	char tmp[BUFFER_SZ];
-	char response[BUFFER_SZ];
-	while (p!= NULL)
+	if (parent_id != 0)
 	{
-		if (difftime(p->datetime, time) >= 0)
-		{
-			sprintf(response, " %d", p->ID);
-			strcat(tmp, response);
-			memset(response, 0, sizeof(response));
-		}
-		p = p->next;
+		send_message_chat(MESS_REPLY, cli);
 	}
-	if (strlen(tmp) == 0)
+	
+
+	char information[512];
+	Message *new = findLastMess(root);
+	printf("Find last mess.\n");
+	if (parent_id == 0)
 	{
-		send_message(MESS_SEARCH_ERROR, cli);
-		return;
+		strcpy(information, processResponseForChat(cli->info, new, 512));
 	}
 	else
 	{
-		sprintf(response, "%s", KEY_FIND);
-		strcat(response, tmp);
-		send_message(response, cli);
-		printf("Responf for find mess: %s\n", response);
-		return;
+		strcpy(information, processResponseForReply(cli->info, new, parent, 512));
 	}
+	printf("Information: %s\n", information);
+	send_message_chat(information, cli);
 }
+
 /* Handle all communication with the client */
 void *handle_client(void *arg)
 {
@@ -366,13 +361,12 @@ void *handle_client(void *arg)
 				{
 					send_message(MESS_VIEW_WSP, cli);
 					char information[256];
-					strcpy(information, processResponseForViewWSP(cli->info));
+					strcpy(information, processResponseForViewWSP(cli->info, 256));
 					send_message(information, cli);
-					
 				}
 				else if (strcmp(token, KEY_JOIN) == 0 && cli->workspace_id == -1)
 				{
-					processWorkspace(cli, buff_out, &flag);	
+					processWorkspace(cli, buff_out, &flag);
 				}
 				else if (strcmp(token, KEY_JOIN) == 0)
 				{
@@ -394,9 +388,10 @@ void *handle_client(void *arg)
 				{
 					send_message(MESS_OUT_ROOM_SUCCESS, cli);
 					char information[512];
-					strcpy(information, processResponseForJoinWSP(cli->info, cli->workspace_id));
+					strcpy(information, processResponseForJoinWSP(cli->info, cli->workspace_id, 512));
 					send_message(information, cli);
 					cli->room_id = -1;
+					flag = 2;
 				}
 				else if (strcmp(token, KEY_OUTROOM) == 0)
 				{
@@ -407,68 +402,58 @@ void *handle_client(void *arg)
 					send_message(MESS_OUT_WSP_SUCCESS, cli);
 					cli->workspace_id = -1;
 					cli->room_id = -1;
+					flag = 1;
 				}
 				else if (strcmp(token, KEY_OUT) == 0)
 				{
 					send_message("You are not in any workspace.", cli);
 				}
-				// else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				// {
-				// 	printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
-				// 	str_trim_lf(buff_out, strlen(buff_out));
+				else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
+					str_trim_lf(buff_out, strlen(buff_out));
 
-				// 	strtok(buff_out, " ");
-				// 	int id = atoi(strtok(NULL, " "));
-				// 	char *content = strtok(NULL, "");
-				// 	processMessage(cli, content, id);
+					// strtok(buff_out, " ");
+					int id = atoi(strtok(NULL, " "));
+					char *content = strtok(NULL, "");
+					processMessage(cli, content, id);
+				}
+				else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					token = strtok(NULL,s);
+					char information[BUFFER_SZ];
+					if (strstr(token, KEY_FIND_CONTENT))
+					{
+						strcpy(information, processResponseForFindContent(cli->info, cli->workspace_id, cli->room_id, token));
+					}
+					else{
+						strcpy(information, processResponseForFindDate(cli->info, cli->workspace_id, cli->room_id, token));
+					}
+					send_message(MESS_FIND,cli);
+					sleep(0.1);
+					send_message(information, cli);
+				}
+				else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					send_message(buff_out, cli);
+				}
 
-				// 	char tmp[BUFFER_SZ];
-				// 	sprintf(tmp, "%s %d %d ", KEY_REPLY, cli->info->ID, id);
-				// 	strcat(tmp, buff_out);
-				// 	send_message_chat(tmp, cli);
-				// }
-				// else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				// {
-				// 	// int num_word = 0;
-				// 	// char newString[5][16];
+				else if (cli->workspace_id != -1 && cli->room_id != -1)
+				{
+					printf("Mess %s -> %s\n", cli->info->name, buff_out);
+					// str_trim_lf(buff_out, strlen(buff_out));
 
-				// 	// splitString(buff_out, newString, &num_word);
-				// 	printf("1\n");
-				// 	token = strtok(NULL,s);
-				// 	processDateFrom(cli, token);
-				// 	// if (num_word == 2 )
-				// 	// {
-				// 	// 	processDate(newString[1],cli);
-				// 	// }
-				// 	// else if (num_word == 3 && strcmp(newString[1], KEY_FROM) == 0)
-				// 	// {
-				// 	// 	processDateFrom(newString[2], cli);
-				// 	// }
-				// 	// else
-				// 	// 	send_message("Wrong format to search. Read instructions again.", cli);
-				// }
-				// else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
-				// {
-				// 	send_message(buff_out, cli);
-				// }
-				
+					if (flag == -1)
+					{
+						break;
+					}
+					processMessage(cli, buff_out, 0);
 
-				// else if (cli->workspace_id != -1 && cli->room_id != -1)
-				// {
-				// 	printf("Mess %s -> %s\n", cli->info->name, buff_out);
-				// 	str_trim_lf(buff_out, strlen(buff_out));
-
-				// 	if (flag == -1)
-				// 	{
-				// 		break;
-				// 	}
-				// 	processMessage(cli, buff_out, 0);
-
-				// 	char tmp[BUFFER_SZ];
-				// 	sprintf(tmp, "%d ", cli->info->ID);
-				// 	strcat(tmp, buff_out);
-				// 	send_message_chat(tmp, cli);
-				// }
+					// char tmp[BUFFER_SZ];
+					// sprintf(tmp, "%d ", cli->info->ID);
+					// strcat(tmp, buff_out);
+					// send_message_chat(tmp, cli);
+				}
 				else
 				{
 					send_message(MESS_ERROR, cli);

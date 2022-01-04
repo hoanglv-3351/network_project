@@ -10,7 +10,12 @@
 #include "../models/keycode.h"
 
 
-char * processResponseForViewWSP(User * user);
-char * processResponseForJoinWSP(User *user, int wsp_id);
-char * processResponseForJoinRoom(User *user, int wsp_id, int room_id);
+char * processResponseForViewWSP(User * user, int size);
+char * processResponseForJoinWSP(User *user, int wsp_id , int size);
+char * processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size);
+char * processResponseForChat(User *user, Message *new, int size);
+char * processResponseForReply(User *user, Message *new, Message *parent, int size);
+
+char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[]);
+char *processResponseForFindContent(User *user, int wsp_id, int room_id, char content[]);
 #endif

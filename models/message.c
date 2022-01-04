@@ -179,6 +179,15 @@ Message *findMessByID(Message *root, int ID)
     }
     return NULL;
 }
+Message *findLastMess(Message *root)
+{
+    Message *p = root;
+    while (p->next != NULL)
+    {
+        p = p->next;
+    }
+    return p;
+}
 // Message *findMessFromDate(time_t time)
 // {
 //      Message * new;

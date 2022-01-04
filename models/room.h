@@ -25,6 +25,8 @@ void insertRoom(Room *root, char name[]);
 
 
 Room *searchRoomByID(Room * root, int ID);
+// input is a User, find all rooms user belong to
+int * findRoomForUser(Room *root, int user_id, int * count);
 void printAllRoom(Room *root);
 
 #endif

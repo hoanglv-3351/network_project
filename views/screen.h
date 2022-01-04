@@ -29,8 +29,8 @@ void ScreenInWSP(char message[]);
 void ScreenChat(char message[]);
 
 void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int ids[]);
-void DisplayMessage(char message[], char name[]);
-void DisplayReplyMessage(char message[], char name[], int reply_id);
+void DisplayMessage(char message[]);
+void DisplayReplyMessage(char message[]);
 void ScreenRoomHelp();
 
 #endif

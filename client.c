@@ -99,13 +99,16 @@ void send_msg_handler()
 }
 void process_message(char message[])
 {
+	// printf("%s",message);
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
+		printf("Join 1\n");
 
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		int num_word = 0;
 		char newString[30][16];
+		
 		splitString(message, newString, &num_word);
 		cli->info->ID = atoi(newString[0]);
 		strcpy(cli->info->name, newString[1]);
@@ -116,26 +119,31 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{
+		printf("Join 2\n");
 		printf("Your name is : %s\n", cli->info->name);
 		printf("Your id is : %d\n", cli->info->ID);
 		printf("Your password is %s\n", cli->info->password);
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
+		printf("Join 3\n");
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenViewListWSP(message);
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
+		printf("Join 4\n");
 		cli->workspace_id = wsp_id;
 		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenInWSP(message);
+		printf("Now in wsp = %d %d\n", wsp_id,cli->workspace_id);
 	}
 	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
-		printf("%s", message);
+		printf("Join 5\n");
 		if (room_id % 2 == 1) // connect only a user
 		{
 			cli->room_id = createFakeRoom(cli->info->ID, room_id);
@@ -143,76 +151,63 @@ void process_message(char message[])
 		else //connect to a room contains many users
 			cli->room_id = room_id;
 		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenChat(message);
+		printf("Now in room = %d %d \n", room_id,cli->room_id);
 
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
+		printf("Join 6\n");
 		printf("%s", message);
 		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenInWSP(message);
 		cli->room_id = -1;
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
 	{
-
+		printf("Join 7\n");
 		printf("%s", message);
 		ScreenLoginSuccess();
 		cli->workspace_id = -1;
 		cli->room_id = -1;
 	}
+	else if (strcmp(message, MESS_REPLY) == 0)
+	{
+		printf("Join 8\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		DisplayReplyMessage(message);
+	}
+	else if (strcmp(message, MESS_FIND) == 0)
+	{
+		printf("Join 9\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenChat(message);
+	}
 	else if (strcmp(message, KEY_HELP) == 0)
 	{
-		ScreenRoomHelp();
-	}
-	else if (strstr(message, KEY_REPLY) && cli->room_id != -1 && cli->workspace_id != -1)
-	{
-		char *token = strtok(message, " ");
-		int send_id = atoi(strtok(NULL, " "));
-		int reply_id = atoi(strtok(NULL, " "));
-		token = strtok(NULL, "");
-		User *u_root = readUserData("db/users.txt");
-		User *user = searchUserByID(u_root, send_id);
-
-		DisplayReplyMessage(token, user->name, reply_id);
-	}
-	else if (strstr(message, KEY_FIND) && cli->room_id != -1 && cli->workspace_id != -1)
-	{
-		int num_word = 0;
-		char newString[30][16];
-
-		splitString(message, newString, &num_word);
-		int ids[64];
-		for (int i = 1; i < num_word; i++)
-		{
-			ids[i - 1] = atoi(newString[i]);
-		}
-
-		char filename[32];
-		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		Message *root = readMessData(filename);
-		ScreenChatSearch(root, cli->info->ID, cli->workspace_id, cli->room_id, ids);
-	}
-	else if (strstr(message, KEY_HELP) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
-	{
+		printf("Join 10\n");
 		ScreenRoomHelp();
 	}
 
 	else if (cli->room_id != -1 && cli->workspace_id != -1)
 	{
-		char *token = strtok(message, " ");
-		int send_id = atoi(token);
-		token = strtok(NULL, "");
-		User *u_root = readUserData("db/users.txt");
-		User *user = searchUserByID(u_root, send_id);
-
-		DisplayMessage(token, user->name);
+		printf("Join 11\n");
+		//memset(message, 0, BUFFER_SZ);
+		//recv(sockfd, message, BUFFER_SZ, 0);
+		DisplayMessage(message);
 	}
 
 	else
 	{
+		printf("Join 12\n");
 		printf("%s", message);
 	}
 }
