@@ -2,6 +2,7 @@
 #include "room.h"
 #include "workspace.h"
 #include "signal.h"
+#include "../utils/utils.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -183,16 +184,16 @@ WorkSpace *readOneWSPData(char filename[], int wsp_id)
     fclose(f);
     return NULL;
 }
-int valueInArray(int val, int arr[], int size)
-{
+// int valueInArray(int val, int arr[], int size)
+// {
 
-    for (int i = 0; i < size; i++)
-    {
-        if (arr[i] == val)
-            return 1;
-    }
-    return 0;
-}
+//     for (int i = 0; i < size; i++)
+//     {
+//         if (arr[i] == val)
+//             return 1;
+//     }
+//     return 0;
+// }
 
 // input is a User, find all workspace user belong to
 int *findWSPForUser(WorkSpace *root, int user_id, int *count)

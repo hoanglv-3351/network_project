@@ -64,17 +64,30 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
     strcat(information, wsp->name);
     strcat(information, "\n");
 
+    int count = 0;
+    for (int i = 0; i < wsp->num_of_rooms; i++)
+    {
+        Room *room = createNewRoom(wsp->room_id[i], wsp->room_name[i], wsp->ID);
+        if (valueInArray(user->ID, room->user_id, room->num_of_users) == 1)
+        {
+            count++;
+        }
+    }
+
     //process rooms
-    sprintf(temp, "%d\n", wsp->num_of_rooms);
+    sprintf(temp, "%d\n", count);
     strcat(information, temp);
     printf("1\n");
     for (int i = 0; i < wsp->num_of_rooms; i++)
     {
-
-        sprintf(temp, "%d ", wsp->room_id[i]);
-        strcat(information, temp);
-        strcat(information, wsp->room_name[i]);
-        strcat(information, "\n");
+        Room *room = createNewRoom(wsp->room_id[i], wsp->room_name[i], wsp->ID);
+        if (valueInArray(user->ID, room->user_id, room->num_of_users) == 1)
+        {
+            sprintf(temp, "%d ", wsp->room_id[i]);
+            strcat(information, temp);
+            strcat(information, wsp->room_name[i]);
+            strcat(information, "\n");
+        }
     }
     printf("1\n");
 
@@ -84,11 +97,12 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
     for (int i = 0; i < wsp->num_of_users; i++)
     {
         User *p = searchUserByID(root, wsp->user_id[i]);
+
         char temp[3];
         sprintf(temp, "%d ", p->ID);
         strcat(information, temp);
         strcat(information, p->name);
-        strcat(information, " ");
+        strcat(information, "\n");
     }
     printf("1\n");
 
@@ -400,7 +414,6 @@ char *processResponseForReply(User *user, Message *new, Message *parent, int siz
 char *processResponseForNotice(int user_id, int size, bool all)
 {
 
-    
     char *information = (char *)malloc(size * sizeof(char));
 
     int count = 0;
@@ -424,7 +437,7 @@ char *processResponseForNotice(int user_id, int size, bool all)
     else
     {
         Notice *root = readNoticeData(user_id);
-    
+
         Notice *p = root;
         while (p != NULL)
         {
@@ -438,7 +451,6 @@ char *processResponseForNotice(int user_id, int size, bool all)
 
                 strcat(information, p->content);
                 strcat(information, "\n");
-                
             }
             p = p->next;
         }

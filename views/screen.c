@@ -139,14 +139,16 @@ void ScreenInWSP(char message[])
   }
 
   printf("WSP users: \n");
-  int num_word = 0;
-  char newString[num_line][16];
-  splitString(newLine[3 + atoi(newLine[1])], newString, &num_word);
-  for (int i = 0; i < num_word - 1; i = i + 2)
+  // int num_word = 0;
+  // char newString[num_line][16];
+  // splitString(newLine[3 + atoi(newLine[1])], newString, &num_word);
+  for (int i = 3 + atoi(newLine[1]); i < num_line; i++)
   {
-    if (strlen(newString[i]) == 0)
+    if (strlen(newLine[i]) == 0)
       break;
-    printf(" (ID %d) %s \n", atoi(newString[i]), newString[i + 1]);
+    int id = atoi(strtok(newLine[i], " "));
+    char *name = strtok(NULL, "");
+    printf(" (ID %d) %s \n", id, name);
   }
 
   yellow();

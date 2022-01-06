@@ -195,6 +195,16 @@ char ** splitStringByLine(char str[], char newString[][128], int * num_word)
     return newString;
     
 }
+int valueInArray(int val, int arr[], int size)
+{
+
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == val)
+            return 1;
+    }
+    return 0;
+}
 
 
 // char * getFirstLine(char str[], char * newString[])
