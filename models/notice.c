@@ -36,7 +36,7 @@ Notice *readAllNoticeData(int user_id)
     char content[128];
 
     char filename[32];
-    strcpy(filename, "db/user_notice_");
+    strcpy(filename, "db/user_notices_");
     char tmp[10];
     sprintf(tmp, "%d.txt", user_id);
     strcat(filename, tmp);
@@ -48,11 +48,13 @@ Notice *readAllNoticeData(int user_id)
     }
     else
     {
-        int check = 1;
-        fscanf(f, "%d\n%s\n", &is_read, content);
+        int check = 1; 
         while (!feof(f))
         {
-
+            fscanf(f, "\n%d\n", &is_read);
+            fscanf(f, "%[^\n]", content);
+            // if (feof(f))
+            //     break;
             if (check == 1)
             {
                 root = createNewNotice(content, is_read);
@@ -70,7 +72,6 @@ Notice *readAllNoticeData(int user_id)
 Notice *readNoticeData(int user_id)
 {
     Notice *root = NULL;
-    int is_read;
     char content[128];
 
     char filename[32];
@@ -79,6 +80,7 @@ Notice *readNoticeData(int user_id)
     sprintf(tmp, "%d.txt", user_id);
     strcat(filename, tmp);
     FILE *f;
+    
     if (!(f = fopen(filename, "r")))
     {
         printf("Can't load Notice Database.\n");
@@ -87,9 +89,14 @@ Notice *readNoticeData(int user_id)
     else
     {
         int check = 1;
-        fscanf(f, "%d\n%s\n", &is_read, content);
+        
         while (!feof(f))
         {
+            int is_read = 0;
+            fscanf(f, "%d\n", &is_read);
+            fscanf(f, "%[^\n]\n", content);
+            if (feof(f))
+                break;
             if (is_read == 0)
             {
                 if (check == 1)
@@ -102,6 +109,7 @@ Notice *readNoticeData(int user_id)
                     root = insertNotice(root, content, is_read);
                 }
             }
+            //printf("%d\n%s\n",is_read, content);
         }
     }
     fclose(f);

@@ -163,6 +163,7 @@ void send_message_notice(char *s, client_t *cli, int user_id)
 }
 void processLOGIN(client_t *cli, char buff_out[], int *flag)
 {
+	
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
 	if (receive <= 0)
 	{
@@ -439,10 +440,45 @@ void *handle_client(void *arg)
 				{
 					send_message("You are not in any workspace.", cli);
 				}
-				else if (strcmp(token, KEY_NOTICE) == 0)
+				else if (strcmp(token, KEY_NOTICE) == 0 )
 				{
-					send_message(processResponseForNotice(cli->info->ID, 2048), cli);
+					char * information = processResponseForNotice(cli->info->ID, 2048, false);
+					if (strcmp(information, MESS_NOTICE_NOT_FOUND) == 0)
+						send_message(MESS_NOTICE_NOT_FOUND, cli);
+					else 
+					{
+						send_message(token,cli);
+						send_message(information, cli);
+					}
+					RewriteNoticeData(cli->info->ID);
 				}
+				// else if (strcmp(token, KEY_NOTICE_ALL) == 0)
+				// {
+				// 	char * information = processResponseForNotice(cli->info->ID, 2048, true);
+				// 	if (strcmp(information, MESS_NOTICE_NOT_FOUND) == 0)
+				// 		send_message(MESS_NOTICE_NOT_FOUND, cli);
+				// 	else 
+				// 	{
+				// 		send_message(token,cli);
+				// 		send_message(information, cli);
+				// 	}
+				// }
+				
+				else if (strcmp(token, KEY_SEARCH) == 0)
+				{
+					token = strtok(NULL, s);
+					char * response = processResponseForSearchRoom(cli->info, cli->workspace_id, token, 128);
+
+					if (strcmp(response, MESS_FIND_ERROR) != 0)
+					{
+						send_message(MESS_FIND, cli);
+						send_message(response, cli);
+					}
+					else
+						send_message(response, cli);
+					
+				}
+				
 				
 				/////////////// PROCESS FOR ADMIN WSP /////////////////
 				else if (strcmp(token, KEY_ADD) == 0 && cli->room_id == -1)
@@ -668,7 +704,6 @@ int main(int argc, char **argv)
 		/* Add client to the queue and fork thread */
 		queue_add(cli);
 		pthread_create(&tid, NULL, &handle_client, (void *)cli);
-
 		/* Reduce CPU usage */
 		sleep(1);
 	}

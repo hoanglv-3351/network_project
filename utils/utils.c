@@ -118,6 +118,8 @@ int createFakeRoom(int a, int b)
     c = pow(3, a) * pow(5, b);
   }
 
+  
+
   return c;
 }
 

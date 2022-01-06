@@ -68,8 +68,8 @@ void ScreenLoginSuccess()
   printf(" 1. Enter %s to view your profile\n", KEY_VIEW);
   printf(" 2. Enter %s to view all of your workspaces\n", KEY_WSP);
   printf(" 3. Enter %s <workspace_id> to join a workspace.\n", KEY_JOIN);
-  printf(" 4. Enter %s to logout the app.\n", KEY_LOGOUT);
-  printf(" 5. Enter %s to view your notice.\n", KEY_NOTICE);
+  printf(" 4. Enter %s to view your unread notice or %s to view all notice.\n", KEY_NOTICE, KEY_NOTICE_ALL);
+  printf(" 5. Enter %s to logout the app.\n", KEY_LOGOUT);
   green();
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();
@@ -117,10 +117,6 @@ void ScreenInWSP(char message[])
   int num_line = 0;
   char newLine[20][128];
   splitStringByLine(message, newLine, &num_line);
-  // for(int i =0; i< num_line; i++)
-  // {
-  //   printf("%s\n", newLine[i]);
-  // }
 
   green();
   printf(" ---- WELCOME TO %s ---- \n", newLine[0]);
@@ -163,6 +159,59 @@ void ScreenInWSP(char message[])
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();
 }
+void ScreenSearchRoom(char message[])
+{
+  int num_line = 0;
+  char newLine[10][128];
+  splitStringByLine(message, newLine, &num_line);
+
+  green();
+  printf(" ---- WELCOME TO %s ---- \n", newLine[0]);
+  reset();
+  if (num_line == 0)
+  {
+    cyan();
+    printf("No matching results.\n");
+    reset();
+  }
+  else
+  {
+    for (int i = 1; i < num_line - 1; i = i + 2)
+    {
+      if (strlen(newLine[i]) == 0)
+        break;
+      printf(" (ID %d) %s \n", atoi(newLine[i]), newLine[i + 1]);
+    }
+  }
+}
+void ScreenNotice(char message[])
+{
+  green();
+  printf("\n---- YOUR NOTICES -----\n");
+  reset();
+
+  int num_line = 0;
+  char newLine[20][128];
+  splitStringByLine(message, newLine, &num_line);
+
+  if (num_line == 0)
+  {
+    printf("You don't have any notice.\n");
+  }
+  else
+  {
+    for (int i = 0; i < num_line; i = i + 2)
+    {
+      printf("%d ", i);
+      blue();
+      if (atoi(newLine[i]) == 0)
+        printf("(new) ");
+      reset();
+      printf(" %s ", newLine[i + 1]);
+      printf("\n");
+    }
+  }
+}
 
 void ScreenChat(char message[])
 {
@@ -184,22 +233,20 @@ void ScreenChat(char message[])
     if (strcmp(newLine[i + 2], "0") != 0)
     {
       green();
-      printf("From %s: ", newLine[i+2]);
+      printf("From %s: ", newLine[i + 2]);
       reset();
     }
 
     if (strcmp(newLine[i + 3], "0") != 0)
     {
       green();
-      printf("(Reply %s)", newLine[i+3]);
+      printf("(Reply %s)", newLine[i + 3]);
       reset();
     }
-    printf("%s\n", newLine[i+4]);
-
+    printf("%s\n", newLine[i + 4]);
   }
   printf("(You can enter %s for some instruction.)\n", KEY_HELP);
 }
-
 
 void DisplayMessage(char message[])
 {

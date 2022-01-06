@@ -3,6 +3,7 @@
 typedef struct Notice{
     char content[64];
     int is_read; //if read = 1, not read = 0
+    time_t datetime;
     struct Notice *next;
 } Notice;
 

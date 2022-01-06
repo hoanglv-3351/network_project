@@ -315,13 +315,13 @@ char *kickUserOutWSP(int self_id, int wsp_id, int user_id)
     {
         return MESS_NOT_AVAILABLE_IN_WSP;
     }
-    for (int i = 0; i < wsp->num_of_users; i++)
-    {
-        if (wsp->user_id[i] != user_id)
-        {
-            wsp->user_id[i] = NULL;
-        }
-    }
+    // for (int i = 0; i < wsp->num_of_users; i++)
+    // {
+    //     if (wsp->user_id[i] != user_id)
+    //     {
+    //         wsp->user_id[i] = NULL;
+    //     }
+    // }
     char filename[32] = "db/workspace_users_";
     char tmp[10];
     sprintf(tmp, "%d.txt", wsp_id);
@@ -335,7 +335,7 @@ char *kickUserOutWSP(int self_id, int wsp_id, int user_id)
     {
         for (int i = 0; i < wsp->num_of_users; i++)
         {
-            if (wsp->user_id[i])
+            if (wsp->user_id[i] != user_id)
                 fprintf(f, "%d\n", wsp->user_id[i]);
         }
     }

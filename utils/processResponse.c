@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "../models/workspace.h"
 #include "../models/room.h"
@@ -95,6 +96,60 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
     return information;
 }
 
+char *processResponseForSearchRoom(User *user, int wsp_id, char content[], int size)
+{
+    char *information = (char *)malloc(size * sizeof(char));
+    WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    User *root = readUserData("db/users.txt");
+    printf("1\n");
+    char temp[3];
+
+    strcat(information, wsp->name);
+    strcat(information, "\n");
+
+    //process rooms
+    //sprintf(temp, "%d\n", wsp->num_of_rooms);
+    //strcat(information, temp);
+    //printf("1\n");
+    int count = 0;
+    for (int i = 0; i < wsp->num_of_rooms; i++)
+    {
+        if (strstr(wsp->room_name[i], content) != NULL)
+        {
+            count++;
+            sprintf(temp, "%d ", wsp->room_id[i]);
+            strcat(information, temp);
+            strcat(information, wsp->room_name[i]);
+            strcat(information, "\n");
+        }
+    }
+    //printf("1\n");
+
+    //process user
+    //sprintf(temp, "%d\n", wsp->num_of_users);
+    //strcat(information, temp);
+    for (int i = 0; i < wsp->num_of_users; i++)
+    {
+        User *p = searchUserByID(root, wsp->user_id[i]);
+        if (strstr(p->name, content) != NULL)
+        {
+            count++;
+            char temp[3];
+            sprintf(temp, "%d ", p->ID);
+            strcat(information, temp);
+            strcat(information, p->name);
+            strcat(information, "\n");
+        }
+    }
+    printf("1\n");
+    if (count == 0)
+    {
+        strcpy(information, MESS_FIND_ERROR);
+    }
+
+    printf("Information for search room:  %s", information);
+    return information;
+}
 char *processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size)
 {
     // static char information[4096];
@@ -342,22 +397,56 @@ char *processResponseForReply(User *user, Message *new, Message *parent, int siz
     return information;
 }
 
-char *processResponseForNotice(int user_id, int size)
+char *processResponseForNotice(int user_id, int size, bool all)
 {
 
-    Notice *root = readNoticeData(user_id);
+    
     char *information = (char *)malloc(size * sizeof(char));
 
-    Notice *p = root;
-    while (p != NULL)
+    int count = 0;
+    if (all)
     {
-        char temp[3];
-        sprintf(temp, "%d\n", root->is_read);
-        strcat(information, temp);
+        Notice *root = readAllNoticeData(user_id);
+        printf("1\n");
+        Notice *p = root;
+        while (p != NULL)
+        {
+            count += 1;
+            char temp[3];
+            sprintf(temp, "%d\n", p->is_read);
+            strcat(information, temp);
 
-        strcat(information, root->content);
-        strcat(information, "\n");
-        p = p->next;
+            strcat(information, p->content);
+            strcat(information, "\n");
+            p = p->next;
+        }
     }
+    else
+    {
+        Notice *root = readNoticeData(user_id);
+    
+        Notice *p = root;
+        while (p != NULL)
+        {
+            printf("%d, %s", p->is_read, p->content);
+            if (p->is_read == 0)
+            {
+                count += 1;
+                char temp[3];
+                sprintf(temp, "%d\n", p->is_read);
+                strcat(information, temp);
+
+                strcat(information, p->content);
+                strcat(information, "\n");
+                
+            }
+            p = p->next;
+        }
+    }
+    if (count == 0)
+    {
+        strcpy(information, MESS_NOTICE_NOT_FOUND);
+    }
+    //printf("Information notice:\n%s\n", information);
     return information;
 }

@@ -137,7 +137,7 @@ void process_message(char message[])
 		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenInWSP(message);
-		printf("Now in wsp = %d %d\n", wsp_id,cli->workspace_id);
+		// printf("Now in wsp = %d %d\n", wsp_id,cli->workspace_id);
 	}
 	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
@@ -175,6 +175,17 @@ void process_message(char message[])
 		cli->workspace_id = -1;
 		cli->room_id = -1;
 	}
+	else if (strcmp(message, MESS_FIND) == 0 && cli->workspace_id != -1 && cli->room_id == -1) // search name while in workspace
+	{
+		printf("Join 13\n");
+		cli->workspace_id = wsp_id;
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenSearchRoom(message);
+	}
+	
+
 	else if (strcmp(message, MESS_REPLY) == 0)
 	{
 		printf("Join 8\n");
@@ -195,6 +206,14 @@ void process_message(char message[])
 	{
 		printf("Join 10\n");
 		ScreenRoomHelp();
+	}
+	else if (strcmp(message, KEY_NOTICE) == 0 || strcmp(message, KEY_NOTICE_ALL) == 0 )
+	{
+		printf("Join 15\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenNotice(message);
 	}
 
 	else if (strcmp(message, MESS) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
