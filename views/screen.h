@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "../models/user.h"
-#include "../models/utils.h"
+#include "../utils/utils.h"
 #include "../models/workspace.h"
 #include "../models/message.h"
 #include "../models/keycode.h"
@@ -23,11 +23,16 @@ void reset ();
 
 void ScreenLogin();
 void ScreenLoginSuccess();
-void ScreenInWSP();
+void ScreenViewListWSP(char message[]);
+void ScreenInWSP(char message[]);
 
-void ChatScreen(Message *root, int user_id, int wsp_id, int room_id);
-void DisplayMessage(char message[], char name[]);
-void DisplayReplyMessage(char message[], char name[], int reply_id);
+void ScreenSearchRoom(char message[]);
+void ScreenNotice(char message[]);
+void ScreenChat(char message[]);
+
+void ScreenChatSearch(Message *root, int user_id, int wsp_id, int room_id, int ids[]);
+void DisplayMessage(char message[]);
+void DisplayReplyMessage(char message[]);
 void ScreenRoomHelp();
 
 #endif

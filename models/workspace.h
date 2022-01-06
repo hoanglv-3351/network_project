@@ -4,6 +4,7 @@
 
 #define MAX_ROOM 10
 #define MAX_USERS_IN_WSP 10
+#define MAX_ROOMS_IN_WSP 5
 
 #include<stdio.h>
 
@@ -19,9 +20,10 @@ typedef struct WorkSpace{
     
     int host_id;
     int user_id[MAX_USERS_IN_WSP];
-    //Room *rooms[MAX_ROOM];
-    int num_of_users;
+    int room_id[MAX_ROOMS_IN_WSP];
+    char room_name[MAX_ROOMS_IN_WSP][32];
     int num_of_rooms;
+    int num_of_users;
     struct WorkSpace *next;
 } WorkSpace;
 
@@ -43,13 +45,14 @@ int * findWSPForUser(WorkSpace *root, int user_id, int * count);
 // input is a user and a workspace, check if user belong to this wsp
 char * checkWSPForUser(WorkSpace *root, int user_id, int * flag);
 //input is a wsp and a room id/user id, check if this wsp contains the room/user
-char *checkAvailableID(WorkSpace *wsp, int id, int *flag);
+char *checkAvailableID(WorkSpace *wsp, int room_id, int user_id, int *flag);
 
 
-void addUserToWSP(WorkSpace workspace, User user);
+//void addUserToWSP(WorkSpace workspace, User user);
 //void updateMessage(WorkSpace workspace, Room room);
 
-void kick(WorkSpace workspace, User user);
+char * addUserToWSP(int self_id, int wsp_id, int user_id);
+char * kickUserOutWSP(int self_id, int wsp_id, int user_id);
 void join(WorkSpace workspace);
 
 #endif

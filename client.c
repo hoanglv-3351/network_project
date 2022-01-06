@@ -9,13 +9,11 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define BUFFER_SZ 512
+#define BUFFER_SZ 4096
 
 #include "views/screen.h"
-#include "models/utils.h"
+#include "utils/utils.h"
 #include "models/signal.h"
-#include "models/user.h"
-#include "models/workspace.h"
 #include "models/keycode.h"
 
 // Global variables
@@ -31,11 +29,8 @@ typedef struct
 
 client_t *cli;
 
-char username[10];
 int wsp_id = 0;
 int room_id = 0;
-
-
 
 void str_overwrite_stdout()
 {
@@ -80,13 +75,7 @@ void send_msg_handler()
 		else
 		{
 			send(sockfd, buffer, strlen(buffer), 0);
-			if (strstr(buffer, KEY_LOGIN))
-			{
-				const char s[2] = " ";
-				char *token = strtok(buffer, s);
-				token = strtok(NULL, s);
-				strcpy(username, token);
-			}
+
 			if (strstr(buffer, KEY_JOIN))
 			{
 				const char s[2] = " ";
@@ -108,120 +97,136 @@ void send_msg_handler()
 }
 void process_message(char message[])
 {
+	// printf("%s",message);
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
-		User *root = readUserData("db/users.txt");
-		cli->info = searchUserByUsername(root, username);
+		printf("Join 1\n");
+
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		int num_word = 0;
+		char newString[30][16];
+		
+		splitString(message, newString, &num_word);
+		cli->info->ID = atoi(newString[0]);
+		strcpy(cli->info->name, newString[1]);
+		strcpy(cli->info->password, newString[2]);
 
 		printf("Welcome %s\n", cli->info->name);
 		ScreenLoginSuccess();
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{
+		printf("Join 2\n");
 		printf("Your name is : %s\n", cli->info->name);
 		printf("Your id is : %d\n", cli->info->ID);
 		printf("Your password is %s\n", cli->info->password);
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
-		WorkSpace *root = readWorkspaceData("db/workspaces.txt");
-		//printAllWSP(root);
-
-		int count = 0;
-		int *list_wps = findWSPForUser(root, cli->info->ID, &count);
-
-		if (count == 0)
-		{
-			cyan();
-			printf("You don't have any workspaces.\nUse %s to create your workspace.\n", KEY_NEW);
-			reset();
-		}
-		else
-		{
-			printf("YOUR WORKSPACES\n");
-			for (int i = 0; i < count; i++)
-			{
-				{
-					WorkSpace *tmp = searchWSPByID(root, list_wps[i]);
-					printf(" (ID %d) %s ", tmp->ID, tmp->name);
-					if (tmp->host_id == cli->info->ID)
-					{
-						green();
-						printf(" (admin) ");
-						reset();
-					}
-					printf("\n");
-				}
-			}
-		}
+		printf("Join 3\n");
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenViewListWSP(message);
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
+		printf("Join 4\n");
 		cli->workspace_id = wsp_id;
-		ScreenInWSP(cli->workspace_id);
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenInWSP(message);
+		// printf("Now in wsp = %d %d\n", wsp_id,cli->workspace_id);
 	}
 	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
-		printf("%s", message);
+		printf("Join 5\n");
 		if (room_id % 2 == 1) // connect only a user
 		{
 			cli->room_id = createFakeRoom(cli->info->ID, room_id);
 		}
 		else //connect to a room contains many users
 			cli->room_id = room_id;
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		if (strcmp(message, MESS_BEGIN_CHAT) != 0)
+			ScreenChat(message);
+		else
+			printf("%s\n", message);
 
-		char filename[32];
-		strcpy(filename, createMessFilename(cli->workspace_id, cli->room_id));
-		Message * root = readMessData(filename);
-		ChatScreen(root, cli->info->ID, cli->workspace_id, cli->room_id);
-		//freeMessData(root);
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-		
+		printf("Join 6\n");
 		printf("%s", message);
-		ScreenInWSP(cli->workspace_id);
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenInWSP(message);
 		cli->room_id = -1;
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
 	{
-		
+		printf("Join 7\n");
 		printf("%s", message);
 		ScreenLoginSuccess();
 		cli->workspace_id = -1;
 		cli->room_id = -1;
-		
+	}
+	else if (strcmp(message, MESS_FIND) == 0 && cli->workspace_id != -1 && cli->room_id == -1) // search name while in workspace
+	{
+		printf("Join 13\n");
+		cli->workspace_id = wsp_id;
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenSearchRoom(message);
+	}
+	
+
+	else if (strcmp(message, MESS_REPLY) == 0)
+	{
+		printf("Join 8\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		DisplayReplyMessage(message);
+	}
+	else if (strcmp(message, MESS_FIND) == 0)
+	{
+		printf("Join 9\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenChat(message);
 	}
 	else if (strcmp(message, KEY_HELP) == 0)
 	{
+		printf("Join 10\n");
 		ScreenRoomHelp();
 	}
-	else if (strcmp(message, KEY_REPLY) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
+	else if (strcmp(message, KEY_NOTICE) == 0 || strcmp(message, KEY_NOTICE_ALL) == 0 )
 	{
-		char *token = strtok(message, " ");
-		int send_id = atoi(strtok(NULL, " "));
-		int reply_id = atoi(strtok(NULL, " "));
-		token = strtok(NULL, "");
-		User *u_root = readUserData("db/users.txt");
-		User *user = searchUserByID(u_root, send_id);
-		
-		DisplayReplyMessage(token, user->name, reply_id);
+		printf("Join 15\n");
+		memset(message, 0, BUFFER_SZ);
+		sleep(0.1);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		ScreenNotice(message);
 	}
-	
-	else if (cli->room_id != -1 && cli->workspace_id != -1)
+
+	else if (strcmp(message, MESS) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
 	{
-		char *token = strtok(message, " ");
-		int send_id = atoi(token);
-		token = strtok(NULL, "");
-		User *u_root = readUserData("db/users.txt");
-		User *user = searchUserByID(u_root, send_id);
-		
-		DisplayMessage(token, user->name);
-		
+		printf("Join 11\n");
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
+		DisplayMessage(message);
 	}
 
 	else
 	{
+		printf("Join 12\n");
 		printf("%s", message);
 	}
 }
@@ -316,7 +321,6 @@ int main(int argc, char **argv)
 	}
 
 	close(sockfd);
-	
 
 	return EXIT_SUCCESS;
 }

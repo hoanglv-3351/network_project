@@ -21,11 +21,19 @@ time_t convertStringToTimeT(char time[])
 {
   int d, m, y, hh, mm, ss;
   struct tm when;
-  sscanf(time, "%d/%d/%d-%d:%d:%d", &d, &m, &y, &hh, &mm, &ss);
+  if (strlen(time) <=  11)
+  {
+    sscanf(time, "%d/%d/%d", &d, &m, &y);
+    hh = 0;
+    mm = 0;
+    ss = 0;
+  }
+  else
+    sscanf(time, "%d/%d/%d-%d:%d:%d", &d, &m, &y, &hh, &mm, &ss);
 
   when.tm_mday = d;
-  when.tm_mon = m-1;
-  when.tm_year = y-1900;
+  when.tm_mon = m - 1;
+  when.tm_year = y - 1900;
   when.tm_hour = hh;
   when.tm_min = mm;
   when.tm_sec = ss;
@@ -51,6 +59,7 @@ char *convertTimeTtoString(time_t converted, int type)
   struct tm *timeptr;
 
   timeptr = localtime(&converted);
+  
 
   static char time_str[64];
 
@@ -67,19 +76,18 @@ char *convertTimeTtoString(time_t converted, int type)
   {
     strftime(time_str, sizeof(time_str), "%d/%m/%Y-%T", timeptr);
   }
-  
+
   //printf("Current Time : %s\n", time_str);
   return time_str;
 }
 
-char * getCurrentTime(int type)
+char *getCurrentTime(int type)
 {
   static char timestr[64];
   time_t mytime = time(NULL);
 
   strcpy(timestr, convertTimeTtoString(mytime, type));
-  
-  
+
   return timestr;
 }
 
@@ -110,9 +118,10 @@ int createFakeRoom(int a, int b)
     c = pow(3, a) * pow(5, b);
   }
 
+  
+
   return c;
 }
-
 
 int returnFakeRoomToID(int c, int a)
 {
@@ -134,5 +143,95 @@ int returnFakeRoomToID(int c, int a)
   }
   b = (a == count_3) ? count_5 : count_3;
   return b;
-
 }
+
+
+char ** splitString(char str[], char newString[][16], int * num_word)
+{
+  int j=0; 
+  int ctr =0;
+    for(int i=0;i<=(strlen(str));i++)
+    {
+      
+        // if space or NULL found, assign NULL into newString[ctr]
+        if(str[i]==' '||str[i]=='\0')
+        {
+            newString[ctr][j]='\0';
+            ctr++;  //for next word
+            j=0;    //for next word, init index to 0
+        }
+        else
+        {
+            newString[ctr][j]=str[i];
+            j++;
+        }
+    }
+    *num_word = ctr;
+    return newString;
+    
+}
+
+char ** splitStringByLine(char str[], char newString[][128], int * num_word)
+{
+  int j=0; 
+  int ctr =0;
+    for(int i=0;i<=(strlen(str));i++)
+    {
+      
+        // if space or NULL found, assign NULL into newString[ctr]
+        if(str[i]=='\n'||str[i]=='\0')
+        {
+            newString[ctr][j]='\0';
+            ctr++;  //for next word
+            j=0;    //for next word, init index to 0
+        }
+        else
+        {
+            newString[ctr][j]=str[i];
+            j++;
+        }
+    }
+    *num_word = ctr;
+    return newString;
+    
+}
+int valueInArray(int val, int arr[], int size)
+{
+
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] == val)
+            return 1;
+    }
+    return 0;
+}
+
+
+// char * getFirstLine(char str[], char * newString[])
+// {
+//   int j=0, i = 0; 
+//   int ctr =0;
+//     for( i=0;i<=(strlen(str));i++)
+//     {   
+
+//         // if space or NULL found, assign NULL into newString[ctr]
+//         if(str[i]=='\n'||str[i]=='\0')
+//         {
+//             newString[0][j]='\0';
+//             j = 0;
+//             break;
+//         }
+//         else
+//         {
+//             newString[0][j]=str[i];
+//             j++;
+//         }
+//     }
+//     for(int k=i;k<=(strlen(str));j++,k++)
+//     {   
+//       newString[1][j]=str[k];
+//     }
+//     *num_word = ctr;
+//     return newString;
+    
+// }

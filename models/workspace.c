@@ -2,6 +2,7 @@
 #include "room.h"
 #include "workspace.h"
 #include "signal.h"
+#include "../utils/utils.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -18,15 +19,12 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
     new->num_of_rooms = 0;
     new->num_of_users = 0;
 
-    
-
     // read Each WorkSpace users
-    char filename[] = "db/workspace_users_";
+    char filename[32] = "db/workspace_users_";
     char tmp[2];
     sprintf(tmp, "%d", id);
     strcat(filename, tmp);
     strcat(filename, ".txt");
-
     FILE *f;
     if (!(f = fopen(filename, "r")))
     {
@@ -38,7 +36,32 @@ WorkSpace *createNewWSP(int id, int host_id, char wsp_name[])
         {
             fscanf(f, "%d", &new->user_id[new->num_of_users++]);
         }
+        fclose(f);
     }
+
+    // read Each WorkSpace room
+    strcpy(filename, "db/workspace_rooms_");
+    sprintf(tmp, "%d", id);
+    strcat(filename, tmp);
+    strcat(filename, ".txt");
+    printf("File room %s\n", filename);
+    if (!(f = fopen(filename, "r")))
+    {
+        printf("\nCreate Workspace Database failed! File Rooms not found.\n");
+    }
+    else
+    {
+        while (!feof(f))
+        {
+            fscanf(f, "%d\n", &new->room_id[new->num_of_rooms]);
+            fscanf(f, "%[^\n]\n", new->room_name[new->num_of_rooms]);
+            new->num_of_rooms += 1;
+            if (feof(f))
+                break;
+        }
+        fclose(f);
+    }
+    printf("Read data WSP %s have %d room, %d user\n", new->name, new->num_of_rooms, new->num_of_users);
 
     return new;
 }
@@ -128,7 +151,7 @@ WorkSpace *readWorkspaceData(char filename[])
 // input wsp_id and read data of only this workspace
 WorkSpace *readOneWSPData(char filename[], int wsp_id)
 {
-    WorkSpace *root;
+    //WorkSpace *root=NULL;
 
     int id, host_id;
     char wsp_name[32];
@@ -140,31 +163,37 @@ WorkSpace *readOneWSPData(char filename[], int wsp_id)
     }
     else
     {
+
         int number_of_workspaces = 0;
         fscanf(f, "%d\n", &number_of_workspaces);
         if (number_of_workspaces == 0)
             return NULL;
         while (!feof(f))
         {
+
             fscanf(f, "%d\n%d\n%s\n", &id, &host_id, wsp_name);
 
             if (id == wsp_id)
-                root = createNewWSP(wsp_id, host_id, wsp_name);
+            {
+
+                fclose(f);
+                return createNewWSP(wsp_id, host_id, wsp_name);
+            }
         }
     }
     fclose(f);
-    return root;
+    return NULL;
 }
-int valueInArray(int val, int *arr)
-{
+// int valueInArray(int val, int arr[], int size)
+// {
 
-    for (int *i = arr; *i; i++)
-    {
-        if (*i == val)
-            return 1;
-    }
-    return 0;
-}
+//     for (int i = 0; i < size; i++)
+//     {
+//         if (arr[i] == val)
+//             return 1;
+//     }
+//     return 0;
+// }
 
 // input is a User, find all workspace user belong to
 int *findWSPForUser(WorkSpace *root, int user_id, int *count)
@@ -174,7 +203,8 @@ int *findWSPForUser(WorkSpace *root, int user_id, int *count)
     *count = 0;
     while (p != NULL)
     {
-        if (valueInArray(user_id, p->user_id) == 1)
+
+        if (valueInArray(user_id, p->user_id, p->num_of_users) == 1)
         {
             list_wps[*count] = p->ID;
             *count = *count + 1;
@@ -188,7 +218,7 @@ int *findWSPForUser(WorkSpace *root, int user_id, int *count)
 // input is a user and a workspace, check if user belong to this wsp
 char *checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
 {
-    if (valueInArray(user_id, wsp->user_id) == 1)
+    if (valueInArray(user_id, wsp->user_id, wsp->num_of_users) == 1)
     {
         *flag = 2;
         return MESS_JOIN_WSP_SUCCESS;
@@ -196,51 +226,120 @@ char *checkWSPForUser(WorkSpace *wsp, int user_id, int *flag)
     return MESS_JOIN_WSP_FAILED;
 }
 
-char *checkAvailableID(WorkSpace *wsp, int id, int *flag)
+char *checkAvailableID(WorkSpace *wsp, int room_id, int user_id, int *flag)
 {
-    if (valueInArray(id, wsp->user_id) == 1)
+    if (room_id % 2 == 1)
     {
-        *flag = 3;
-        return MESS_JOIN_ROOM_SUCCESS;
+        if (valueInArray(room_id, wsp->user_id, wsp->num_of_users) == 1)
+        {
+            *flag = 3;
+            return MESS_JOIN_ROOM_SUCCESS;
+        }
     }
-    // if (valueInArray(id, wsp->room_id) == 1)
-    // {
-    //     *flag = 3;
-    //     return MESS_JOIN_ROOM_SUCCESS;
-    // }
+    else
+    {
+        for (int i = 0; i < wsp->num_of_rooms; i++)
+        {
+            Room *room = createNewRoom(wsp->room_id[i], wsp->room_name[i], wsp->ID);
+            if (valueInArray(user_id, room->user_id, room->num_of_users) == 1)
+            {
+                *flag = 3;
+                return MESS_JOIN_ROOM_SUCCESS;
+            }
+        }
+    }
+
     return MESS_INVALID_ID;
-
 }
-
-void addUserToWSP(WorkSpace workspace, User user)
-{
-}
-
-void kick(WorkSpace workspace, User user)
-{
-}
-void join(WorkSpace workspace)
-{
-}
-
-// int main(int argc, char const *argv[])
-// {
-
-//     WorkSpace *root = readWorkspaceData("db/workspaces.txt");
-// 	printAllWSP(root);
-//     return 0;
-// }
 
 void freeWorkspaceData(WorkSpace *root)
 {
-    WorkSpace * current = root;
-    WorkSpace * next;
- 
-   while (current != NULL)
-   {
-       next = current->next;
-       free(current);
-       current = next;
-   }
-   root = NULL;
+    WorkSpace *current = root;
+    WorkSpace *next;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+    root = NULL;
+}
+
+char *addUserToWSP(int self_id, int wsp_id, int user_id)
+{
+    WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    if (wsp == NULL)
+    {
+        return MESS_JOIN_WSP_FAILED;
+    }
+    if (wsp->host_id != self_id)
+    {
+        return MESS_NOT_HOST;
+    }
+    if (valueInArray(user_id, wsp->user_id, wsp->num_of_users) == 1)
+    {
+        return MESS_AVAILABLE_IN_WSP;
+    }
+
+    wsp->user_id[wsp->num_of_users] = user_id;
+
+    char filename[32] = "db/workspace_users_";
+    char tmp[10];
+    sprintf(tmp, "%d.txt", wsp_id);
+    strcat(filename, tmp);
+    FILE *f;
+    if (!(f = fopen(filename, "a")))
+    {
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
+    }
+    else
+    {
+        fprintf(f, "%d\n", wsp->user_id[wsp->num_of_users]);
+        fclose(f);
+    }
+    return MESS_ADD_SUCCESS;
+}
+
+char *kickUserOutWSP(int self_id, int wsp_id, int user_id)
+{
+    WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    if (wsp == NULL)
+    {
+        return MESS_JOIN_WSP_FAILED;
+    }
+    if (wsp->host_id != self_id)
+    {
+        return MESS_NOT_HOST;
+    }
+    if (valueInArray(user_id, wsp->user_id, wsp->num_of_users) == 0)
+    {
+        return MESS_NOT_AVAILABLE_IN_WSP;
+    }
+    // for (int i = 0; i < wsp->num_of_users; i++)
+    // {
+    //     if (wsp->user_id[i] != user_id)
+    //     {
+    //         wsp->user_id[i] = NULL;
+    //     }
+    // }
+    char filename[32] = "db/workspace_users_";
+    char tmp[10];
+    sprintf(tmp, "%d.txt", wsp_id);
+    strcat(filename, tmp);
+    FILE *f;
+    if (!(f = fopen(filename, "a")))
+    {
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
+    }
+    else
+    {
+        for (int i = 0; i < wsp->num_of_users; i++)
+        {
+            if (wsp->user_id[i] != user_id)
+                fprintf(f, "%d\n", wsp->user_id[i]);
+        }
+    }
+    fclose(f);
+    return MESS_KICK_SUCCESS;
 }

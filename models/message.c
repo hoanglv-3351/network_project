@@ -4,7 +4,7 @@
 
 #include "signal.h"
 #include "message.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 Message *createNewMess(int parent_id, char time[], int send_id,  char content[])
 {
@@ -65,7 +65,6 @@ Message *readMessData(char filename[])
     if (!(f = fopen(filename, "r")))
     {
         printf("-1\n");
-        printf("The two of you have connected and can start talking to each other.\n");
         return NULL;
     }
     else
@@ -178,6 +177,15 @@ Message *findMessByID(Message *root, int ID)
         p = p->next;
     }
     return NULL;
+}
+Message *findLastMess(Message *root)
+{
+    Message *p = root;
+    while (p->next != NULL)
+    {
+        p = p->next;
+    }
+    return p;
 }
 // Message *findMessFromDate(time_t time)
 // {

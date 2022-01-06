@@ -1,0 +1,10 @@
+1
+Welcome firt time come to wsp chat.
+1
+Huong vi send you a mess in workspce ID 1.
+1
+You have a new message from hoang in workspace HUST_WORKSPACE
+1
+hoang add you to workspace SAMI_WSP with ID = 3. Now you can join it.
+1
+hoang add you to workspace SAMI_WSP with ID = 3. Now you can join it.

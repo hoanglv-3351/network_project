@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "../models/user.h"
-#include "../models/utils.h"
+#include "../utils/utils.h"
 #include "../models/workspace.h"
 #include "../models/message.h"
 #include "../models/keycode.h"
@@ -67,35 +67,90 @@ void ScreenLoginSuccess()
   reset();
   printf(" 1. Enter %s to view your profile\n", KEY_VIEW);
   printf(" 2. Enter %s to view all of your workspaces\n", KEY_WSP);
-  printf(" 3. Enter %s <workspace_name> to join a workspace.\n", KEY_JOIN);
-  printf(" 4. Enter %s to logout the app.\n", KEY_LOGOUT);
+  printf(" 3. Enter %s <workspace_id> to join a workspace.\n", KEY_JOIN);
+  printf(" 4. Enter %s to view your unread notice or %s to view all notice.\n", KEY_NOTICE, KEY_NOTICE_ALL);
+  printf(" 5. Enter %s to logout the app.\n", KEY_LOGOUT);
   green();
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();
 }
-void ScreenProfile(User *id)
+void ScreenViewListWSP(char message[])
 {
+  int num_line = 0;
+  char newLine[5][128];
+  splitStringByLine(message, newLine, &num_line);
+  if (newLine[0] == 0)
+  {
+    cyan();
+    printf("You don't have any workspaces.\nUse %s <workspace_name> to create your workspace.\n", KEY_NEW);
+    reset();
+  }
+  else
+  {
+    green();
+    printf(" --- YOUR WORKSPACES --- \n");
+    reset();
+    for (int i = 1; i < num_line; i++)
+    {
+      if (strlen(newLine[i]) <= 1)
+        break;
+      int num_word = 0;
+      char newString[num_line][16];
+      splitString(newLine[i], newString, &num_word);
+      printf(" (ID %d) %s ", atoi(newString[0]), newString[1]);
+      if (atoi(newString[2]) == 1)
+      {
+        green();
+        printf(" (admin) ");
+        reset();
+      }
+      printf("\n");
+    }
+  }
 }
 
 // after join a chatrooom
-void ScreenInWSP(int wsp_id)
+void ScreenInWSP(char message[])
 {
   //system("clear");
-  WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
-  User *root = readUserData("db/users.txt");
+
+  int num_line = 0;
+  char newLine[20][128];
+  splitStringByLine(message, newLine, &num_line);
 
   green();
-  printf(" ---- WELCOME TO %s ---- \n", wsp->name);
+  printf(" ---- WELCOME TO %s ---- \n", newLine[0]);
   reset();
-  printf(" WSP rooms: \n");
-  printf(" WSP users: \n");
-  for (int i = 0; i < wsp->num_of_users; i++)
+  if (atoi(newLine[1]) == 0)
   {
-    User *p = searchUserByID(root, wsp->user_id[i]);
-    printf(" (ID %d) %s\n", p->ID, p->name);
+    cyan();
+    printf("This workspace don't have any rooms.\n");
+    reset();
+  }
+  else
+  {
+    printf("WSP rooms: \n");
+    for (int i = 0; i < atoi(newLine[1]); i++)
+    {
+      int id = atoi(strtok(newLine[i + 2], " "));
+      char *name = strtok(NULL, "");
+      printf(" (ID %d) %s \n", id, name);
+    }
   }
 
-  yellow();
+  printf("WSP users: \n");
+  // int num_word = 0;
+  // char newString[num_line][16];
+  // splitString(newLine[3 + atoi(newLine[1])], newString, &num_word);
+  for (int i = 3 + atoi(newLine[1]); i < num_line; i++)
+  {
+    if (strlen(newLine[i]) == 0)
+      break;
+    int id = atoi(strtok(newLine[i], " "));
+    char *name = strtok(NULL, "");
+    printf(" (ID %d) %s \n", id, name);
+  }
+
   yellow();
   printf("\n (Here is some instructions for you)\n");
   reset();
@@ -106,58 +161,120 @@ void ScreenInWSP(int wsp_id)
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();
 }
-
-void ChatScreen(Message *root, int user_id, int wsp_id, int room_id)
+void ScreenSearchRoom(char message[])
 {
+  int num_line = 0;
+  char newLine[10][128];
+  splitStringByLine(message, newLine, &num_line);
 
-  User *u_root = readUserData("db/users.txt");
+  green();
+  printf(" ---- WELCOME TO %s ---- \n", newLine[0]);
+  reset();
+  if (num_line == 0)
+  {
+    cyan();
+    printf("No matching results.\n");
+    reset();
+  }
+  else
+  {
+    for (int i = 1; i < num_line - 1; i = i + 2)
+    {
+      if (strlen(newLine[i]) == 0)
+        break;
+      printf(" (ID %d) %s \n", atoi(newLine[i]), newLine[i + 1]);
+    }
+  }
+}
+void ScreenNotice(char message[])
+{
+  green();
+  printf("\n---- YOUR NOTICES -----\n");
+  reset();
+
+  int num_line = 0;
+  char newLine[20][128];
+  splitStringByLine(message, newLine, &num_line);
+
+  if (num_line == 0)
+  {
+    printf("You don't have any notice.\n");
+  }
+  else
+  {
+    for (int i = 0; i < num_line; i = i + 2)
+    {
+      printf("%d ", i);
+      blue();
+      if (atoi(newLine[i]) == 0)
+        printf("(new) ");
+      reset();
+      printf(" %s ", newLine[i + 1]);
+      printf("\n");
+    }
+  }
+}
+
+void ScreenChat(char message[])
+{
 
   //system("clear");
   green();
   printf("\n---- CHAT ROOM -----\n");
   reset();
 
-  Message *p = root;
-  while (p != NULL)
+  int num_line = 0;
+  char newLine[51][128];
+  splitStringByLine(message, newLine, &num_line);
+  for (int i = 0; i < num_line - 5; i = i + 5)
   {
-    char timestr[64];
-    strcpy(timestr, convertTimeTtoString(p->datetime, 1));
-
     blue();
-    printf("ID %d", p->ID);
-    printf("(%s) ", timestr);
-    if (p->send_id != user_id)
+    printf("ID %d", atoi(newLine[i]));
+    printf("(%s) ", newLine[i + 1]);
+    reset();
+    if (strcmp(newLine[i + 2], "0") != 0)
     {
       green();
-      User *tmp = searchUserByID(u_root, p->send_id);
-      if (p->parent_id == 0)
-        printf("%s: ", tmp->name);
-      else
-        printf("%s reply mess ID %d: ", tmp->name, p->parent_id);
+      printf("From %s: ", newLine[i + 2]);
+      reset();
     }
-    reset();
-    printf("%s\n", p->content);
-    p = p->next;
+
+    if (strcmp(newLine[i + 3], "0") != 0)
+    {
+      green();
+      printf("(Reply %s)", newLine[i + 3]);
+      reset();
+    }
+    printf("%s\n", newLine[i + 4]);
   }
+  printf("(You can enter %s for some instruction.)\n", KEY_HELP);
 }
 
-void DisplayMessage(char message[], char name[])
+void DisplayMessage(char message[])
 {
+  int num_line = 0;
+  char newLine[4][128];
+  splitStringByLine(message, newLine, &num_line);
   blue();
-  printf("(%s)", getCurrentTime(1));
+  printf("ID %d (%s)", atoi(newLine[0]), newLine[2]);
   green();
-  printf("%s: ", name);
+  printf("From %s: ", newLine[1]);
   reset();
-  printf("%s", message);
+  printf("%s", newLine[3]);
+  return;
 }
-void DisplayReplyMessage(char message[], char name[], int reply_id)
+void DisplayReplyMessage(char message[])
 {
+  int num_line = 0;
+  char newLine[5][128];
+  splitStringByLine(message, newLine, &num_line);
   blue();
-  printf("(%s)", getCurrentTime(1));
+  printf("ID %d (%s)", atoi(newLine[0]), newLine[2]);
   green();
-  printf("%s reply mess ID %d: ", name, reply_id);
+  printf("From %s (Reply %s): ", newLine[1], newLine[3]);
   reset();
-  printf("%s", message);
+  printf("%s", newLine[4]);
+  return;
 }
 
 void ScreenRoomHelp()
@@ -166,8 +283,8 @@ void ScreenRoomHelp()
   printf("\n (Here is some instructions for you)\n\n");
   reset();
   printf(" 1. Enter %s <message_id> to reply any message.\n", KEY_REPLY);
-  printf(" 2. Enter %s <date> to find messages in selected day. Ex: #FIND 30/1/2021 \n", KEY_FIND);
-  printf(" 3. Enter %s %s <date from> to find all message from selected day.\n", KEY_FIND, KEY_FROM);
-  printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
+  printf(" 2. Enter %s <date> to find messages from selected day. Format: #FIND 30/1/2021 \n", KEY_FIND);
+  printf(" 3. Enter %s %s <search words> to find all message have matching words.\n", KEY_FIND, KEY_FIND_CONTENT);
+  //printf(" 3. Enter %s %s <date from> %s <date to> to find all message from selected time period.\n", KEY_FIND, KEY_FROM, KEY_TO);
   printf(" 4. Enter %s to lelf the room.\n", KEY_OUTROOM);
 }

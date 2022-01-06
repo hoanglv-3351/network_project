@@ -16,4 +16,9 @@ int returnFakeRoomToID(int room_id, int cli_id);
 time_t convertStringToTimeT(char time[]);
 char * convertTimeTtoString(time_t converted, int type);
 char * getCurrentTime(int type);
+
+int valueInArray(int val, int arr[], int size);
+
+char ** splitString(char str[], char newString[][16], int * num_word);
+char ** splitStringByLine(char str[], char newString[][128], int * num_word);
 #endif
