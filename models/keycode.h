@@ -34,7 +34,8 @@
 #define KEY_VIEW "#VIEW"
 #define KEY_WSP "#LIST_WSP"
 #define KEY_JOIN "#JOIN"
-
+#define KEY_NOTICE "#NOTICE"
+#define KEY_NOTICE_ALL "#NOTICE_ALL"
 
 // in wsp command
 #define KEY_CONNECT "#CONNECT"
@@ -54,6 +55,7 @@
 #define KEY_FIND_CONTENT "#S"
 #define KEY_OUTROOM "#OUTROOM"
 #define KEY_EXIT "#EXIT"
+
 
 
 #define KEY_HELP "#HELP"

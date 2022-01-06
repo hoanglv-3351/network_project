@@ -33,4 +33,13 @@
 
 #define MESS_ERROR "This message is wrong format or not allowed here."
 
+// for admin
+#define MESS_AVAILABLE_IN_WSP "This user is on workspace now. Don't need add anymore."
+#define MESS_NOT_AVAILABLE_IN_WSP "This user is on workspace now. Don't need add anymore."
+#define MESS_ADD_SUCCESS "Add user success"
+#define MESS_KICK_SUCCESS "Kick user success"
+#define MESS_NOT_HOST "You are not the host of this workspace. Can't add any one."
+
+
+#define MESS "This is a normal message."
 #endif

@@ -9,13 +9,14 @@
 #include "../models/room.h"
 #include "../models/user.h"
 #include "../models/message.h"
+#include "../models/notice.h"
 #include "utils.h"
 
 char *processResponseForViewWSP(User *user, int size)
 {
 
     // static char information[512];
-    char * information = (char*) malloc(size * sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
     int count = 0;
     WorkSpace *root = readWorkspaceData("db/workspaces.txt");
     int *list_wps = findWSPForUser(root, user->ID, &count);
@@ -51,17 +52,21 @@ char *processResponseForViewWSP(User *user, int size)
 char *processResponseForJoinWSP(User *user, int wsp_id, int size)
 {
     // static char information[512];
-    char * information = (char*) malloc(size * sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
 
     WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    printf("1\n");
     User *root = readUserData("db/users.txt");
+    printf("1\n");
     char temp[3];
+
     strcat(information, wsp->name);
     strcat(information, "\n");
 
     //process rooms
     sprintf(temp, "%d\n", wsp->num_of_rooms);
     strcat(information, temp);
+    printf("1\n");
     for (int i = 0; i < wsp->num_of_rooms; i++)
     {
 
@@ -70,6 +75,7 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
         strcat(information, wsp->room_name[i]);
         strcat(information, "\n");
     }
+    printf("1\n");
 
     //process user
     sprintf(temp, "%d\n", wsp->num_of_users);
@@ -83,6 +89,7 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
         strcat(information, p->name);
         strcat(information, " ");
     }
+    printf("1\n");
 
     printf("Information for wsp list:  %s", information);
     return information;
@@ -91,7 +98,7 @@ char *processResponseForJoinWSP(User *user, int wsp_id, int size)
 char *processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size)
 {
     // static char information[4096];
-    char * information = (char*) malloc(size *sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
 
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
@@ -160,7 +167,7 @@ char *processResponseForJoinRoom(User *user, int wsp_id, int room_id, int size)
 char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[], int size)
 {
     // static char information[4096];
-    char * information = (char*) malloc(size * sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
 
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
@@ -175,7 +182,7 @@ char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[
     while (p != NULL)
     {
         time_t time_ = convertStringToTimeT(time);
-        if (difftime(p->datetime, time_) >= 0 )
+        if (difftime(p->datetime, time_) >= 0)
         {
             if (count_mess == 10)
             {
@@ -223,11 +230,10 @@ char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[
     return information;
 }
 
-
 char *processResponseForFindContent(User *user, int wsp_id, int room_id, char content[], int size)
 {
     //static char information[4096];
-    char * information = (char*) malloc( size* sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
 
     char filename[32];
     strcpy(filename, createMessFilename(wsp_id, room_id));
@@ -245,7 +251,7 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
             {
                 break;
             }
-            count_mess++ ;
+            count_mess++;
             // line 0: ID of mess
             sprintf(temp, "%d\n", p->ID);
             strcat(information, temp);
@@ -257,7 +263,7 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
             strcat(information, "\n");
             if (p->send_id != user->ID)
             {
-                // line 2: send name of mess 
+                // line 2: send name of mess
                 User *tmp = searchUserByID(u_root, p->send_id);
                 strcat(information, tmp->name);
                 strcat(information, "\n");
@@ -291,9 +297,9 @@ char *processResponseForFindContent(User *user, int wsp_id, int room_id, char co
     // printf("Information message:\n  %s\n", information);
     return information;
 }
-char * processResponseForChat(User *user, Message *new, int size)
+char *processResponseForChat(User *user, Message *new, int size)
 {
-    char * information = (char*) malloc(size * sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
     printf("1\n");
 
     char temp[3];
@@ -302,19 +308,20 @@ char * processResponseForChat(User *user, Message *new, int size)
 
     strcat(information, user->name);
     strcat(information, "\n");
-    
+
     strcat(information, convertTimeTtoString(new->datetime, 1));
     strcat(information, "\n");
 
     strcat(information, new->content);
     strcat(information, "\n");
 
+    printf("Information message:\n  %s\n", information);
     return information;
 }
-char *processResponseForReply(User *user, Message *new, Message *parent,int size)
+char *processResponseForReply(User *user, Message *new, Message *parent, int size)
 {
     //static char information[4096];
-    char * information = (char*) malloc(size * sizeof(char));
+    char *information = (char *)malloc(size * sizeof(char));
 
     char temp[3];
     sprintf(temp, "%d\n", new->ID);
@@ -332,5 +339,25 @@ char *processResponseForReply(User *user, Message *new, Message *parent,int size
     strcat(information, new->content);
     strcat(information, "\n");
 
+    return information;
+}
+
+char *processResponseForNotice(int user_id, int size)
+{
+
+    Notice *root = readNoticeData(user_id);
+    char *information = (char *)malloc(size * sizeof(char));
+
+    Notice *p = root;
+    while (p != NULL)
+    {
+        char temp[3];
+        sprintf(temp, "%d\n", root->is_read);
+        strcat(information, temp);
+
+        strcat(information, root->content);
+        strcat(information, "\n");
+        p = p->next;
+    }
     return information;
 }

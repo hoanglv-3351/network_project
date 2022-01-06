@@ -17,4 +17,8 @@ char * processResponseForReply(User *user, Message *new, Message *parent, int si
 
 char *processResponseForFindDate(User *user, int wsp_id, int room_id, char time[], int size);
 char *processResponseForFindContent(User *user, int wsp_id, int room_id, char content[], int size);
+
+
+char * processResponseForNotice(int user_id, int size);
+
 #endif

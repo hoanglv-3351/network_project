@@ -251,25 +251,6 @@ char *checkAvailableID(WorkSpace *wsp, int room_id, int user_id, int *flag)
     return MESS_INVALID_ID;
 }
 
-void addUserToWSP(WorkSpace workspace, User user)
-{
-}
-
-void kick(WorkSpace workspace, User user)
-{
-}
-void join(WorkSpace workspace)
-{
-}
-
-// int main(int argc, char const *argv[])
-// {
-
-//     WorkSpace *root = readWorkspaceData("db/workspaces.txt");
-// 	printAllWSP(root);
-//     return 0;
-// }
-
 void freeWorkspaceData(WorkSpace *root)
 {
     WorkSpace *current = root;
@@ -282,4 +263,82 @@ void freeWorkspaceData(WorkSpace *root)
         current = next;
     }
     root = NULL;
+}
+
+char *addUserToWSP(int self_id, int wsp_id, int user_id)
+{
+    WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    if (wsp == NULL)
+    {
+        return MESS_JOIN_WSP_FAILED;
+    }
+    if (wsp->host_id != self_id)
+    {
+        return MESS_NOT_HOST;
+    }
+    if (valueInArray(user_id, wsp->user_id, wsp->num_of_users) == 1)
+    {
+        return MESS_AVAILABLE_IN_WSP;
+    }
+
+    wsp->user_id[wsp->num_of_users] = user_id;
+
+    char filename[32] = "db/workspace_users_";
+    char tmp[10];
+    sprintf(tmp, "%d.txt", wsp_id);
+    strcat(filename, tmp);
+    FILE *f;
+    if (!(f = fopen(filename, "a")))
+    {
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
+    }
+    else
+    {
+        fprintf(f, "%d\n", wsp->user_id[wsp->num_of_users]);
+        fclose(f);
+    }
+    return MESS_ADD_SUCCESS;
+}
+
+char *kickUserOutWSP(int self_id, int wsp_id, int user_id)
+{
+    WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+    if (wsp == NULL)
+    {
+        return MESS_JOIN_WSP_FAILED;
+    }
+    if (wsp->host_id != self_id)
+    {
+        return MESS_NOT_HOST;
+    }
+    if (valueInArray(user_id, wsp->user_id, wsp->num_of_users) == 0)
+    {
+        return MESS_NOT_AVAILABLE_IN_WSP;
+    }
+    for (int i = 0; i < wsp->num_of_users; i++)
+    {
+        if (wsp->user_id[i] != user_id)
+        {
+            wsp->user_id[i] = NULL;
+        }
+    }
+    char filename[32] = "db/workspace_users_";
+    char tmp[10];
+    sprintf(tmp, "%d.txt", wsp_id);
+    strcat(filename, tmp);
+    FILE *f;
+    if (!(f = fopen(filename, "a")))
+    {
+        printf("\nCreate Workspace Database failed! File Users not found.\n");
+    }
+    else
+    {
+        for (int i = 0; i < wsp->num_of_users; i++)
+        {
+            if (wsp->user_id[i])
+                fprintf(f, "%d\n", wsp->user_id[i]);
+        }
+    }
+    fclose(f);
+    return MESS_KICK_SUCCESS;
 }

@@ -48,10 +48,11 @@ char * checkWSPForUser(WorkSpace *root, int user_id, int * flag);
 char *checkAvailableID(WorkSpace *wsp, int room_id, int user_id, int *flag);
 
 
-void addUserToWSP(WorkSpace workspace, User user);
+//void addUserToWSP(WorkSpace workspace, User user);
 //void updateMessage(WorkSpace workspace, Room room);
 
-void kick(WorkSpace workspace, User user);
+char * addUserToWSP(int self_id, int wsp_id, int user_id);
+char * kickUserOutWSP(int self_id, int wsp_id, int user_id);
 void join(WorkSpace workspace);
 
 #endif

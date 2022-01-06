@@ -21,6 +21,7 @@
 #include "models/message.h"
 #include "models/signal.h"
 #include "models/keycode.h"
+#include "models/notice.h"
 
 #include "utils/utils.h"
 #include "utils/processResponse.h"
@@ -136,6 +137,30 @@ void send_message(char *s, client_t *cli)
 	}
 	pthread_mutex_unlock(&clients_mutex);
 }
+void send_message_notice(char *s, client_t *cli, int user_id)
+{
+	pthread_mutex_lock(&clients_mutex);
+	for (int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		if (clients[i])
+		{
+			if (clients[i]->info->ID == user_id)
+			{
+				if (clients[i]->room_id == cli->room_id && clients[i]->room_id != -1)
+				{
+					continue;
+				}
+				
+				if (write(clients[i]->sockfd, s, strlen(s)) < 0)
+				{
+					perror("ERROR: write to descriptor failed");
+					break;
+				}
+			}
+		}
+	}
+	pthread_mutex_unlock(&clients_mutex);
+}
 void processLOGIN(client_t *cli, char buff_out[], int *flag)
 {
 	int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
@@ -179,7 +204,7 @@ void processLOGIN(client_t *cli, char buff_out[], int *flag)
 
 	char information[128];
 	sprintf(information, "%d %s %s", cli->info->ID, cli->info->name, cli->info->password);
-	sleep(0.1);
+	sleep(0.5);
 	send_message(information, cli);
 
 	//freeUserData(root);
@@ -217,6 +242,7 @@ void processWorkspace(client_t *cli, char buff_out[], int *flag)
 	printf("%s join wsp %d\n", cli->info->name, cli->workspace_id);
 	char information[512];
 	strcpy(information, processResponseForJoinWSP(cli->info, cli->workspace_id, 512));
+	sleep(0.5);
 	send_message(information, cli);
 }
 
@@ -249,7 +275,8 @@ void processChatroom(client_t *cli, char buff_out[], int *flag)
 		cli->room_id = id;
 	printf("%s join room %d\n", cli->info->name, cli->room_id);
 	char information[BUFFER_SZ];
-	strcpy(information, processResponseForJoinRoom(cli->info, cli->workspace_id, cli->room_id, BUFFER_SZ ));
+	strcpy(information, processResponseForJoinRoom(cli->info, cli->workspace_id, cli->room_id, BUFFER_SZ));
+	sleep(0.5);
 	send_message(information, cli);
 }
 
@@ -287,7 +314,10 @@ void processMessage(client_t *cli, char content[], int parent_id)
 	{
 		send_message_chat(MESS_REPLY, cli);
 	}
-	
+	else
+	{
+		send_message_chat(MESS, cli);
+	}
 
 	char information[512];
 	Message *new = findLastMess(root);
@@ -301,6 +331,7 @@ void processMessage(client_t *cli, char content[], int parent_id)
 		strcpy(information, processResponseForReply(cli->info, new, parent, 512));
 	}
 	printf("Information: %s\n", information);
+	sleep(0.5);
 	send_message_chat(information, cli);
 }
 
@@ -408,6 +439,57 @@ void *handle_client(void *arg)
 				{
 					send_message("You are not in any workspace.", cli);
 				}
+				else if (strcmp(token, KEY_NOTICE) == 0)
+				{
+					send_message(processResponseForNotice(cli->info->ID, 2048), cli);
+				}
+				
+				/////////////// PROCESS FOR ADMIN WSP /////////////////
+				else if (strcmp(token, KEY_ADD) == 0 && cli->room_id == -1)
+				{
+					int wsp_id = atoi(strtok(NULL, s));
+					int user_id = atoi(strtok(NULL, s));
+
+					char *response = addUserToWSP(cli->info->ID, wsp_id, user_id);
+					send_message(response, cli);
+					if (strcmp(response, MESS_ADD_SUCCESS) == 0)
+					{
+						char content[64];
+						strcpy(content, cli->info->name);
+						strcat(content, " add you to workspace ");
+						WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+						strcat(content, wsp->name);
+						strcat(content, " with ID = ");
+						char tmp[2];
+						sprintf(tmp, "%d", wsp_id);
+						strcat(content, tmp);
+						strcat(content, ". Now you can join it.");
+
+						saveNotice(user_id, content);
+						send_message_notice(content, cli, user_id);
+					}
+				}
+				else if (strcmp(token, KEY_KICK) == 0 && cli->room_id == -1)
+				{
+					int wsp_id = atoi(strtok(NULL, s));
+					int user_id = atoi(strtok(NULL, s));
+
+					char *response = kickUserOutWSP(cli->info->ID, wsp_id, user_id);
+					send_message(response, cli);
+					if (strcmp(response, MESS_KICK_SUCCESS) == 0)
+					{
+						char content[64];
+						strcpy(content, cli->info->name);
+						strcat(content, " kick you to workspace ");
+						WorkSpace *wsp = readOneWSPData("db/workspaces.txt", wsp_id);
+						strcat(content, wsp->name);
+
+						saveNotice(user_id, content);
+						send_message_notice(content, cli, user_id);
+					}
+				}
+
+				/////////////// PROCESS CHAT ///////////////////////
 				else if (strcmp(token, KEY_REPLY) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
 				{
 					printf("Mess reply %s -> %s\n", cli->info->name, buff_out);
@@ -420,18 +502,25 @@ void *handle_client(void *arg)
 				}
 				else if (strcmp(token, KEY_FIND) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
 				{
-					token = strtok(NULL,s);
+					token = strtok(NULL, s);
 					char information[BUFFER_SZ];
 					if (strstr(token, KEY_FIND_CONTENT))
 					{
+						token = strtok(NULL, s);
 						strcpy(information, processResponseForFindContent(cli->info, cli->workspace_id, cli->room_id, token, BUFFER_SZ));
 					}
-					else{
+					else
+					{
 						strcpy(information, processResponseForFindDate(cli->info, cli->workspace_id, cli->room_id, token, BUFFER_SZ));
 					}
-					if (strcmp(information, MESS_FIND_ERROR) != 0)
+					printf("Information: %ld\n", strlen(information));
+					if (strcmp(information, MESS_FIND_ERROR) == 0)
+						send_message(MESS_FIND_ERROR, cli);
+					else 
+					{
 						send_message(MESS_FIND,cli);
-					send_message(information, cli);
+						send_message(information, cli);
+					}
 					
 				}
 				else if (strcmp(token, KEY_HELP) == 0 && cli->workspace_id != -1 && cli->room_id != -1)
@@ -449,11 +538,27 @@ void *handle_client(void *arg)
 						break;
 					}
 					processMessage(cli, buff_out, 0);
-
-					// char tmp[BUFFER_SZ];
-					// sprintf(tmp, "%d ", cli->info->ID);
-					// strcat(tmp, buff_out);
-					// send_message_chat(tmp, cli);
+					char content[64];
+					strcpy(content, "You have a new message from ");
+					strcat(content, cli->info->name);
+					strcat(content, " in workspace ");
+					WorkSpace *wsp = readOneWSPData("db/workspaces.txt", cli->workspace_id);
+					strcat(content, wsp->name);
+					if (cli->room_id % 2 == 1)
+					{
+						int user_id = returnFakeRoomToID(cli->room_id, cli->info->ID);
+						send_message_notice(content, cli, user_id);
+						saveNotice(user_id, content);
+					}
+					else
+					{
+						Room * room = createNewRoom(cli->room_id, " ", cli->workspace_id);
+						for (int i = 0; i < room->num_of_users; i++)
+						{
+							send_message_notice(content, cli, room->user_id[i]);
+							saveNotice(room->user_id[i], content);
+						}
+					}
 				}
 				else
 				{
@@ -491,14 +596,15 @@ void *handle_client(void *arg)
 
 int main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
-		printf("Usage: %s <port>\n", argv[0]);
+		printf("Usage: %s <ip> <port>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	char *ip = "127.0.0.1";
-	int port = atoi(argv[1]);
+	char ip[16];
+	strcpy(ip, argv[1]);
+	int port = atoi(argv[2]);
 	int option = 1;
 	int listenfd = 0, connfd = 0;
 	struct sockaddr_in serv_addr;

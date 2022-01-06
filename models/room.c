@@ -42,21 +42,4 @@ Room * createNewRoom(int ID, char name[], int wsp_id)
 
     return new;
 }
-// void insertRoom(Room *root, char name[])
-// {
-//     Room *new = createNewRoom(0, name);
-//     if (root == NULL)
-//     {
-//         new->next = root;
-//         root = new;
-//     }
-//     else
-//     {
-//         Room *p = root;
-//         while (p->next != NULL)
-//             p = p->next;
-//         new->ID = p->ID + 2;
-//         p->next = new;
-//     }
-// }
 

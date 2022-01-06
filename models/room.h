@@ -17,16 +17,16 @@ typedef struct Room{
 
 
 
-Room * readOneRoomData(char filename[], int wsp_id, int room_id);
+// Room * readOneRoomData(char filename[], int wsp_id, int room_id);
 
 
 Room * createNewRoom(int ID, char name[], int wsp_id);
-void insertRoom(Room *root, char name[]);
+// void insertRoom(Room *root, char name[]);
 
 
-Room *searchRoomByID(Room * root, int ID);
-// input is a User, find all rooms user belong to
-int * findRoomForUser(Room *root, int user_id, int * count);
-void printAllRoom(Room *root);
+// Room *searchRoomByID(Room * root, int ID);
+// // input is a User, find all rooms user belong to
+// int * findRoomForUser(Room *root, int user_id, int * count);
+// void printAllRoom(Room *root);
 
 #endif

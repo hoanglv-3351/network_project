@@ -69,6 +69,7 @@ void ScreenLoginSuccess()
   printf(" 2. Enter %s to view all of your workspaces\n", KEY_WSP);
   printf(" 3. Enter %s <workspace_id> to join a workspace.\n", KEY_JOIN);
   printf(" 4. Enter %s to logout the app.\n", KEY_LOGOUT);
+  printf(" 5. Enter %s to view your notice.\n", KEY_NOTICE);
   green();
   printf("\n#### -------- THANK YOU --------- ##\n");
   reset();

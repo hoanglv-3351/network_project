@@ -14,8 +14,6 @@
 #include "views/screen.h"
 #include "utils/utils.h"
 #include "models/signal.h"
-#include "models/user.h"
-#include "models/workspace.h"
 #include "models/keycode.h"
 
 // Global variables
@@ -199,11 +197,11 @@ void process_message(char message[])
 		ScreenRoomHelp();
 	}
 
-	else if (cli->room_id != -1 && cli->workspace_id != -1)
+	else if (strcmp(message, MESS) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
 	{
 		printf("Join 11\n");
-		//memset(message, 0, BUFFER_SZ);
-		//recv(sockfd, message, BUFFER_SZ, 0);
+		memset(message, 0, BUFFER_SZ);
+		recv(sockfd, message, BUFFER_SZ, 0);
 		DisplayMessage(message);
 	}
 
