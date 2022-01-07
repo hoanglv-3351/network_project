@@ -100,7 +100,7 @@ void process_message(char message[])
 	// printf("%s",message);
 	if (strcmp(message, MESS_LOGIN_SUCCESS) == 0)
 	{
-		printf("Join 1\n");
+		// // printf("Join 1\n");
 
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
@@ -117,21 +117,21 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_VIEW_PROFILE) == 0)
 	{
-		printf("Join 2\n");
+		// printf("Join 2\n");
 		printf("Your name is : %s\n", cli->info->name);
 		printf("Your id is : %d\n", cli->info->ID);
 		printf("Your password is %s\n", cli->info->password);
 	}
 	else if (strcmp(message, MESS_VIEW_WSP) == 0)
 	{
-		printf("Join 3\n");
+		// printf("Join 3\n");
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		ScreenViewListWSP(message);
 	}
 	else if (strcmp(message, MESS_JOIN_WSP_SUCCESS) == 0)
 	{
-		printf("Join 4\n");
+		// printf("Join 4\n");
 		cli->workspace_id = wsp_id;
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
@@ -141,7 +141,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_JOIN_ROOM_SUCCESS) == 0)
 	{
-		printf("Join 5\n");
+		// printf("Join 5\n");
 		if (room_id % 2 == 1) // connect only a user
 		{
 			cli->room_id = createFakeRoom(cli->info->ID, room_id);
@@ -159,7 +159,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_OUT_ROOM_SUCCESS) == 0)
 	{
-		printf("Join 6\n");
+		// printf("Join 6\n");
 		printf("%s", message);
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
@@ -169,7 +169,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_OUT_WSP_SUCCESS) == 0)
 	{
-		printf("Join 7\n");
+		// printf("Join 7\n");
 		printf("%s", message);
 		ScreenLoginSuccess();
 		cli->workspace_id = -1;
@@ -177,7 +177,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_FIND) == 0 && cli->workspace_id != -1 && cli->room_id == -1) // search name while in workspace
 	{
-		printf("Join 13\n");
+		// printf("Join 13\n");
 		cli->workspace_id = wsp_id;
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
@@ -188,7 +188,7 @@ void process_message(char message[])
 
 	else if (strcmp(message, MESS_REPLY) == 0)
 	{
-		printf("Join 8\n");
+		// printf("Join 8\n");
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
@@ -196,7 +196,7 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, MESS_FIND) == 0)
 	{
-		printf("Join 9\n");
+		// printf("Join 9\n");
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
@@ -204,12 +204,12 @@ void process_message(char message[])
 	}
 	else if (strcmp(message, KEY_HELP) == 0)
 	{
-		printf("Join 10\n");
+		// printf("Join 10\n");
 		ScreenRoomHelp();
 	}
 	else if (strcmp(message, KEY_NOTICE) == 0 || strcmp(message, KEY_NOTICE_ALL) == 0 )
 	{
-		printf("Join 15\n");
+		// printf("Join 15\n");
 		memset(message, 0, BUFFER_SZ);
 		sleep(0.1);
 		recv(sockfd, message, BUFFER_SZ, 0);
@@ -218,7 +218,7 @@ void process_message(char message[])
 
 	else if (strcmp(message, MESS) == 0 && cli->room_id != -1 && cli->workspace_id != -1)
 	{
-		printf("Join 11\n");
+		// printf("Join 11\n");
 		memset(message, 0, BUFFER_SZ);
 		recv(sockfd, message, BUFFER_SZ, 0);
 		DisplayMessage(message);
@@ -226,7 +226,7 @@ void process_message(char message[])
 
 	else
 	{
-		printf("Join 12\n");
+		// // printf("Join 12\n");
 		printf("%s", message);
 	}
 }
